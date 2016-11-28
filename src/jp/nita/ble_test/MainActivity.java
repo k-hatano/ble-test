@@ -18,6 +18,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.util.Log;
+import android.view.View;
 
 import java.util.UUID;
  
@@ -57,6 +58,14 @@ public class MainActivity extends Activity {
             @Override
             public void onStartFailure(int errorCode) {
                 super.onStartFailure(errorCode);
+            }
+        });
+        
+        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCharacteristic.setValue("ABC".getBytes());
+                gattServer.notifyCharacteristicChanged(mDevice, mCharacteristic, false);
             }
         });
     }
