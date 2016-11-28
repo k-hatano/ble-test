@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
         AdvertiseSettings settings = settingBuilder.build();
  
         AdvertiseData.Builder dataBuilder = new AdvertiseData.Builder();
-        dataBuilder.addServiceUuid(new ParcelUuid(UUID.fromString("65432461-1EFE-4ADB-BC7E-9F7F8E27FDC1")));
+        dataBuilder.addServiceUuid(new ParcelUuid(UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb")));
         AdvertiseData advertiseData = dataBuilder.build();
  
         setGattServer();
