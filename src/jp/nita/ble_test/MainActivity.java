@@ -16,9 +16,11 @@ import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.UUID;
  
@@ -27,6 +29,8 @@ public class MainActivity extends Activity {
 	BluetoothGattServer gattServer;
     BluetoothDevice mDevice;
     BluetoothGattCharacteristic mCharacteristic;
+    
+    Handler guiThreadHandler = new Handler();
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,21 +53,36 @@ public class MainActivity extends Activity {
         AdvertiseData advertiseData = dataBuilder.build();
  
         setGattServer();
+        final Activity activity = this;
         advertiser.startAdvertising(settings, advertiseData, new AdvertiseCallback() {
             @Override
             public void onStartSuccess(AdvertiseSettings settingsInEffect) {
                 super.onStartSuccess(settingsInEffect);
+                Toast.makeText(activity, "start succeeded", Toast.LENGTH_LONG).show();
             }
  
             @Override
             public void onStartFailure(int errorCode) {
                 super.onStartFailure(errorCode);
+                Toast.makeText(activity, "start failed", Toast.LENGTH_LONG).show();
             }
         });
         
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+            	if (gattServer == null) {
+            		Toast.makeText(v.getContext(), "gattServer is null", Toast.LENGTH_LONG).show();
+            		return;
+            	}
+            	if (mDevice == null) {
+            		Toast.makeText(v.getContext(), "mDevice is null", Toast.LENGTH_LONG).show();
+            		return;
+            	}
+            	if (mCharacteristic == null) {
+            		Toast.makeText(v.getContext(), "mCharacteristic is null", Toast.LENGTH_LONG).show();
+            		return;
+            	}
                 mCharacteristic.setValue("ABC".getBytes());
                 gattServer.notifyCharacteristicChanged(mDevice, mCharacteristic, false);
             }
@@ -71,7 +90,7 @@ public class MainActivity extends Activity {
     }
      
     public void setGattServer() {
-     
+    	
         BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
      
         gattServer = manager.openGattServer(getApplicationContext(), new BluetoothGattServerCallback() {
@@ -79,6 +98,7 @@ public class MainActivity extends Activity {
             public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId, BluetoothGattCharacteristic characteristic, boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
                 super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded, offset, value);
                 if (value != null) {
+                	showToastAsync("get characteristic write request : " + new String(value));
                     Log.d("TAG", "value ~ " + new String(value));
                 }
                 gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null);
@@ -87,6 +107,7 @@ public class MainActivity extends Activity {
             @Override
             public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
+            	showToastAsync("get characteristic read request");
                 gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, "ABC".getBytes());
             }
      
@@ -94,8 +115,10 @@ public class MainActivity extends Activity {
             public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
                 super.onConnectionStateChange(device, status, newState);
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
+                	showToastAsync("state changed to connected");
                     mDevice = device;
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                	showToastAsync("state changed to disconnected");
                     mDevice = null;
                 }
             }
@@ -113,5 +136,16 @@ public class MainActivity extends Activity {
                         BluetoothGattCharacteristic.PERMISSION_WRITE);
         service.addCharacteristic(mCharacteristic);
         gattServer.addService(service);
+    }
+    
+    public void showToastAsync(final String text) {
+        guiThreadHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (MainActivity.this != null) {
+                    Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 }
