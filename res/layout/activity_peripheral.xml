@@ -6,13 +6,13 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="jp.nita.ble_test.MainActivity" >
+    tools:context="jp.nita.ble_test.PeripheralActivity" >
 
     <Button 
-        android:id="@+id/button_peripheral"
+        android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Peripheral"
+        android:text="Button"
         />
-    
+
 </RelativeLayout>
