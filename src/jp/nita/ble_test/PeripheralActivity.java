@@ -68,7 +68,7 @@ public class PeripheralActivity extends Activity {
 			@Override
 			public void onStartFailure(int errorCode) {
 				super.onStartFailure(errorCode);
-				Toast.makeText(activity, "start failed", Toast.LENGTH_LONG).show();
+				Toast.makeText(activity, "start failed : "+errorCode, Toast.LENGTH_LONG).show();
 			}
 		});
 
@@ -94,8 +94,8 @@ public class PeripheralActivity extends Activity {
 	}
 	
 	@Override
-	public void onDestroy(){
-		super.onDestroy();
+	public void onPause(){
+		super.onPause();
 
         final Activity finalActivity = this;
         //アドバタイズを停止
@@ -110,7 +110,7 @@ public class PeripheralActivity extends Activity {
     			@Override
     			public void onStartFailure(int errorCode) {
     				super.onStartFailure(errorCode);
-    				Toast.makeText(finalActivity, "stop failed", Toast.LENGTH_LONG).show();
+    				Toast.makeText(finalActivity, "stop failed : "+errorCode, Toast.LENGTH_LONG).show();
     			}
         	});
         	mAdvertiser = null;
