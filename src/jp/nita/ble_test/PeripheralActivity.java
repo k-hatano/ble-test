@@ -72,7 +72,7 @@ public class PeripheralActivity extends Activity {
 			}
 		});
 
-		findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+		findViewById(R.id.button_send_abc).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				if (gattServer == null) {
@@ -91,37 +91,43 @@ public class PeripheralActivity extends Activity {
 				gattServer.notifyCharacteristicChanged(mDevice, mCharacteristic, false);
 			}
 		});
+		
+		final Activity finalActivity = this;
+		findViewById(R.id.button_stop_advertising).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				
+		        //アドバタイズを停止
+		        if (mAdvertiser != null) {
+		        	mAdvertiser.stopAdvertising(new AdvertiseCallback(){
+		        		@Override
+		    			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
+		    				super.onStartSuccess(settingsInEffect);
+		    				Toast.makeText(finalActivity, "stop succeeded", Toast.LENGTH_LONG).show();
+		    			}
+
+		    			@Override
+		    			public void onStartFailure(int errorCode) {
+		    				super.onStartFailure(errorCode);
+		    				Toast.makeText(finalActivity, "stop failed : "+errorCode, Toast.LENGTH_LONG).show();
+		    			}
+		        	});
+		        	mAdvertiser = null;
+		        }
+				
+				//サーバーを閉じる
+		        if (gattServer != null) {
+		            gattServer.clearServices();
+		            gattServer.close();
+		            gattServer = null;
+		        }
+			}
+		});
 	}
 	
 	@Override
 	public void onPause(){
 		super.onPause();
-
-        final Activity finalActivity = this;
-        //アドバタイズを停止
-        if (mAdvertiser != null) {
-        	mAdvertiser.stopAdvertising(new AdvertiseCallback(){
-        		@Override
-    			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-    				super.onStartSuccess(settingsInEffect);
-    				Toast.makeText(finalActivity, "stop succeeded", Toast.LENGTH_LONG).show();
-    			}
-
-    			@Override
-    			public void onStartFailure(int errorCode) {
-    				super.onStartFailure(errorCode);
-    				Toast.makeText(finalActivity, "stop failed : "+errorCode, Toast.LENGTH_LONG).show();
-    			}
-        	});
-        	mAdvertiser = null;
-        }
-		
-		//サーバーを閉じる
-        if (gattServer != null) {
-            gattServer.clearServices();
-            gattServer.close();
-            gattServer = null;
-        }
 	}
 
 	public void setGattServer() {
