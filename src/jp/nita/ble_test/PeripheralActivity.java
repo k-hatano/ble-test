@@ -44,6 +44,11 @@ public class PeripheralActivity extends Activity {
 		BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
 		BluetoothAdapter adapter = manager.getAdapter();
 		mAdvertiser = adapter.getBluetoothLeAdvertiser();
+		if (mAdvertiser == null) {
+			Toast.makeText(this, "mAdvertiser is null", Toast.LENGTH_LONG).show();
+			finish();
+			return;
+		}
 
 		AdvertiseSettings.Builder settingBuilder = new AdvertiseSettings.Builder();
 		settingBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY);

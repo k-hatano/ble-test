@@ -1,5 +1,6 @@
 package jp.nita.ble_test;
 
+import java.util.Timer;
 import java.util.UUID;
 
 import android.app.Activity;
@@ -15,9 +16,13 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class CentralActivity extends Activity {
 
@@ -26,6 +31,14 @@ public class CentralActivity extends Activity {
 	private BluetoothGatt mBleGatt;
 	private boolean mIsBluetoothEnable = false;
 	private BluetoothGattCharacteristic mBleCharacteristic;
+
+	Handler guiThreadHandler = new Handler();
+	
+	private String mStrReceivedNum = "";
+	private Timer mTimer;
+
+	private final static int MESSAGE_NEW_RECEIVEDNUM = 0;
+	private final static int MESSAGE_NEW_SENDNUM = 1;
 
 	private static final String SERVICE_UUID = "0A917941-40E4-40E8-81B8-146FD1F2479A";
 	private static final String CHAR_UUID = "0015D5AE-2653-4BB1-8EE1-AF566EE846DC";
@@ -47,8 +60,10 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
+				showToastAsync("connected");
 				gatt.discoverServices();
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+				showToastAsync("disconnected");
 				if (mBleGatt != null) {
 					mBleGatt.close();
 					mBleGatt = null;
@@ -62,9 +77,11 @@ public class CentralActivity extends Activity {
 			if (status == BluetoothGatt.GATT_SUCCESS) {
 				BluetoothGattService service = gatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
 				if (service != null) {
+					showToastAsync("found service : " + CentralActivity.SERVICE_UUID);
 					mBleCharacteristic = service.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
 
 					if (mBleCharacteristic != null) {
+						showToastAsync("found characteristic : " + CentralActivity.CHAR_UUID);
 						mBleGatt = gatt;
 
 						boolean registered = mBleGatt.setCharacteristicNotification(mBleCharacteristic, true);
@@ -79,6 +96,30 @@ public class CentralActivity extends Activity {
 				}
 			}
 		}
+
+		@Override
+		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+			if (CentralActivity.CHAR_UUID.equals(characteristic.getUuid().toString().toUpperCase())) {
+				showToastAsync("characteristic changed : " + CentralActivity.CHAR_UUID);
+				mStrReceivedNum = characteristic.getStringValue(0);
+				mBleHandler.sendEmptyMessage(MESSAGE_NEW_RECEIVEDNUM);
+			}
+		}
+	};
+
+	final CentralActivity finalActivity = this;
+
+	private Handler mBleHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MESSAGE_NEW_RECEIVEDNUM:
+				showToastAsync("received : " + msg);
+				break;
+			case MESSAGE_NEW_SENDNUM:
+				showToastAsync("sended : " + msg);
+				break;
+			}
+		}
 	};
 
 	@Override
@@ -91,6 +132,22 @@ public class CentralActivity extends Activity {
 		mBluetoothAdapter = bluetoothManager.getAdapter();
 		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
 
+		this.scanNewDevice();
+	}
+
+	private void scanNewDevice() {
+		mBluetoothAdapter.startLeScan(mScanCallback);
+	}
+
+	@Override
+	protected void onDestroy() {
+		// 画面遷移時は通信を切断する.
+		mIsBluetoothEnable = false;
+		if (mBleGatt != null) {
+			mBleGatt.close();
+			mBleGatt = null;
+		}
+		super.onDestroy();
 	}
 
 	@Override
@@ -110,5 +167,16 @@ public class CentralActivity extends Activity {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+	
+	public void showToastAsync(final String text) {
+		guiThreadHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				if (CentralActivity.this != null) {
+					Toast.makeText(CentralActivity.this, text, Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
 	}
 }
