@@ -22,7 +22,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
+import android.widget.TextView;
 
 public class CentralActivity extends Activity {
 
@@ -60,10 +60,10 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
-				showToastAsync("connected");
+				showToastAsync(finalActivity, "connected");
 				gatt.discoverServices();
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-				showToastAsync("disconnected");
+				showToastAsync(finalActivity, "disconnected");
 				if (mBleGatt != null) {
 					mBleGatt.close();
 					mBleGatt = null;
@@ -77,11 +77,11 @@ public class CentralActivity extends Activity {
 			if (status == BluetoothGatt.GATT_SUCCESS) {
 				BluetoothGattService service = gatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
 				if (service != null) {
-					showToastAsync("found service : " + CentralActivity.SERVICE_UUID);
+					showToastAsync(finalActivity, "found service : " + CentralActivity.SERVICE_UUID);
 					mBleCharacteristic = service.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
 
 					if (mBleCharacteristic != null) {
-						showToastAsync("found characteristic : " + CentralActivity.CHAR_UUID);
+						showToastAsync(finalActivity, "found characteristic : " + CentralActivity.CHAR_UUID);
 						mBleGatt = gatt;
 
 						boolean registered = mBleGatt.setCharacteristicNotification(mBleCharacteristic, true);
@@ -100,7 +100,7 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 			if (CentralActivity.CHAR_UUID.equals(characteristic.getUuid().toString().toUpperCase())) {
-				showToastAsync("characteristic changed : " + CentralActivity.CHAR_UUID);
+				showToastAsync(finalActivity, "characteristic changed : " + CentralActivity.CHAR_UUID);
 				mStrReceivedNum = characteristic.getStringValue(0);
 				mBleHandler.sendEmptyMessage(MESSAGE_NEW_RECEIVEDNUM);
 			}
@@ -113,10 +113,10 @@ public class CentralActivity extends Activity {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MESSAGE_NEW_RECEIVEDNUM:
-				showToastAsync("received : " + msg);
+				showToastAsync(finalActivity, "received : " + msg);
 				break;
 			case MESSAGE_NEW_SENDNUM:
-				showToastAsync("sended : " + msg);
+				showToastAsync(finalActivity, "sended : " + msg);
 				break;
 			}
 		}
@@ -169,12 +169,15 @@ public class CentralActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	public void showToastAsync(final String text) {
+	public void showToastAsync(final CentralActivity activity ,final String text) {
 		guiThreadHandler.post(new Runnable() {
 			@Override
 			public void run() {
 				if (CentralActivity.this != null) {
-					Toast.makeText(CentralActivity.this, text, Toast.LENGTH_SHORT).show();
+					// Toast.makeText(PeripheralActivity.this, text,
+					// Toast.LENGTH_SHORT).show();
+					TextView textView = ((TextView) (activity.findViewById(R.id.textview_central)));
+					textView.setText(textView.getText() + "\n" + text);
 				}
 			}
 		});

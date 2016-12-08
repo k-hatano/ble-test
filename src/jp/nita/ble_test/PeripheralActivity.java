@@ -20,7 +20,7 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import java.util.UUID;
 
@@ -45,7 +45,7 @@ public class PeripheralActivity extends Activity {
 		BluetoothAdapter adapter = manager.getAdapter();
 		mAdvertiser = adapter.getBluetoothLeAdvertiser();
 		if (mAdvertiser == null) {
-			Toast.makeText(this, "mAdvertiser is null", Toast.LENGTH_LONG).show();
+			showToastAsync(this, "mAdvertiser is null");
 			finish();
 			return;
 		}
@@ -62,18 +62,18 @@ public class PeripheralActivity extends Activity {
 		AdvertiseData advertiseData = dataBuilder.build();
 
 		setGattServer();
-		final Activity activity = this;
+		final PeripheralActivity activity = this;
 		mAdvertiser.startAdvertising(settings, advertiseData, new AdvertiseCallback() {
 			@Override
 			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
 				super.onStartSuccess(settingsInEffect);
-				Toast.makeText(activity, "start succeeded", Toast.LENGTH_LONG).show();
+				showToastAsync(activity, "start succeeded");
 			}
 
 			@Override
 			public void onStartFailure(int errorCode) {
 				super.onStartFailure(errorCode);
-				Toast.makeText(activity, "start failed : "+errorCode, Toast.LENGTH_LONG).show();
+				showToastAsync(activity, "start failed : "+errorCode);
 			}
 		});
 
@@ -81,15 +81,15 @@ public class PeripheralActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				if (gattServer == null) {
-					Toast.makeText(v.getContext(), "gattServer is null", Toast.LENGTH_LONG).show();
+					showToastAsync(activity, "gattServer is null");
 					return;
 				}
 				if (mDevice == null) {
-					Toast.makeText(v.getContext(), "mDevice is null", Toast.LENGTH_LONG).show();
+					showToastAsync(activity, "mDevice is null");
 					return;
 				}
 				if (mCharacteristic == null) {
-					Toast.makeText(v.getContext(), "mCharacteristic is null", Toast.LENGTH_LONG).show();
+					showToastAsync(activity, "mCharacteristic is null");
 					return;
 				}
 				mCharacteristic.setValue("ABC".getBytes());
@@ -97,7 +97,7 @@ public class PeripheralActivity extends Activity {
 			}
 		});
 		
-		final Activity finalActivity = this;
+		final PeripheralActivity finalActivity = this;
 		findViewById(R.id.button_stop_advertising).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -108,13 +108,13 @@ public class PeripheralActivity extends Activity {
 		        		@Override
 		    			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
 		    				super.onStartSuccess(settingsInEffect);
-		    				Toast.makeText(finalActivity, "stop succeeded", Toast.LENGTH_LONG).show();
+		    				showToastAsync(finalActivity, "stop succeeded");
 		    			}
 
 		    			@Override
 		    			public void onStartFailure(int errorCode) {
 		    				super.onStartFailure(errorCode);
-		    				Toast.makeText(finalActivity, "stop failed : "+errorCode, Toast.LENGTH_LONG).show();
+		    				showToastAsync(finalActivity, "stop failed : "+errorCode);
 		    			}
 		        	});
 		        	mAdvertiser = null;
@@ -138,6 +138,7 @@ public class PeripheralActivity extends Activity {
 	public void setGattServer() {
 
 		BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+		final PeripheralActivity finalActivity = this;
 
 		gattServer = manager.openGattServer(getApplicationContext(), new BluetoothGattServerCallback() {
 			@Override
@@ -147,7 +148,7 @@ public class PeripheralActivity extends Activity {
 				super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded,
 						offset, value);
 				if (value != null) {
-					showToastAsync("get characteristic write request : " + new String(value));
+					showToastAsync(finalActivity, "get characteristic write request : " + new String(value));
 					Log.d("TAG", "value ~ " + new String(value));
 				}
 				gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null);
@@ -157,7 +158,7 @@ public class PeripheralActivity extends Activity {
 			public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset,
 					BluetoothGattCharacteristic characteristic) {
 				super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
-				showToastAsync("get characteristic read request");
+				showToastAsync(finalActivity, "get characteristic read request");
 				gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, "ABC".getBytes());
 			}
 
@@ -165,10 +166,10 @@ public class PeripheralActivity extends Activity {
 			public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
 				super.onConnectionStateChange(device, status, newState);
 				if (newState == BluetoothProfile.STATE_CONNECTED) {
-					showToastAsync("state changed to connected");
+					showToastAsync(finalActivity ,"state changed to connected");
 					mDevice = device;
 				} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-					showToastAsync("state changed to disconnected");
+					showToastAsync(finalActivity, "state changed to disconnected");
 					mDevice = null;
 				}
 			}
@@ -184,12 +185,15 @@ public class PeripheralActivity extends Activity {
 		gattServer.addService(service);
 	}
 
-	public void showToastAsync(final String text) {
+	public void showToastAsync(final PeripheralActivity activity ,final String text) {
 		guiThreadHandler.post(new Runnable() {
 			@Override
 			public void run() {
 				if (PeripheralActivity.this != null) {
-					Toast.makeText(PeripheralActivity.this, text, Toast.LENGTH_SHORT).show();
+					// showToastAsync(PeripheralActivity.this, text,
+					// Toast.LENGTH_SHORT).show();
+					TextView textView = ((TextView) (activity.findViewById(R.id.textview_peripheral)));
+					textView.setText(textView.getText() + "\n" + text);
 				}
 			}
 		});
