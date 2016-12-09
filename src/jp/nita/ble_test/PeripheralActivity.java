@@ -174,6 +174,11 @@ public class PeripheralActivity extends Activity {
 				}
 			}
 		});
+		
+		if (gattServer == null) {
+			showToastAsync(finalActivity, "making gattServer failed");
+			return;
+		}
 
 		BluetoothGattService service = new BluetoothGattService(UUID.fromString(SERVICE_UUID),
 				BluetoothGattService.SERVICE_TYPE_PRIMARY);
@@ -193,7 +198,8 @@ public class PeripheralActivity extends Activity {
 					// showToastAsync(PeripheralActivity.this, text,
 					// Toast.LENGTH_SHORT).show();
 					TextView textView = ((TextView) (activity.findViewById(R.id.textview_peripheral)));
-					textView.setText(textView.getText() + "\n" + text);
+					String newString = text + "\n" + textView.getText();
+					textView.setText(newString);
 				}
 			}
 		});

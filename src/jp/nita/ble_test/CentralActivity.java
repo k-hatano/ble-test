@@ -60,10 +60,10 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
-				showToastAsync(finalActivity, "connected");
+				showToastAsync(finalActivity, "state changed to connected");
 				gatt.discoverServices();
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-				showToastAsync(finalActivity, "disconnected");
+				showToastAsync(finalActivity, "state changed to disconnected");
 				if (mBleGatt != null) {
 					mBleGatt.close();
 					mBleGatt = null;
@@ -177,7 +177,8 @@ public class CentralActivity extends Activity {
 					// Toast.makeText(PeripheralActivity.this, text,
 					// Toast.LENGTH_SHORT).show();
 					TextView textView = ((TextView) (activity.findViewById(R.id.textview_central)));
-					textView.setText(textView.getText() + "\n" + text);
+					String newString = text + "\n" + textView.getText();
+					textView.setText(newString);
 				}
 			}
 		});
