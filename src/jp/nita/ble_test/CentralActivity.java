@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 public class CentralActivity extends Activity {
@@ -133,6 +134,27 @@ public class CentralActivity extends Activity {
 		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
 
 		this.scanNewDevice();
+		
+		final CentralActivity activity = this;
+		
+		findViewById(R.id.button_send_abc_central).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mBleGatt == null) {
+					showToastAsync(activity, "mBleGatt is null");
+					return;
+				}
+				if (mBleCharacteristic == null) {
+					showToastAsync(activity, "mBleCharacteristic is null");
+					return;
+				}
+				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
+				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
+
+				myChar.setValue("ABC".getBytes());
+				mBleGatt.writeCharacteristic(myChar);
+			}
+		});
 	}
 
 	private void scanNewDevice() {

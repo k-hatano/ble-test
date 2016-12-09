@@ -8,11 +8,18 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="jp.nita.ble_test.CentralActivity" >
     
+    <Button 
+        android:id="@+id/button_send_abc_central"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send ABC"
+        />
+    
      <TextView
          android:id="@+id/textview_central"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:layout_alignParentTop="true"
+         android:layout_below="@+id/button_send_abc_central"
          android:layout_alignParentBottom="true"
          android:layout_alignParentLeft="true"
          android:layout_alignParentRight="true"
