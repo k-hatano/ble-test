@@ -28,9 +28,18 @@
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:layout_alignLeft="@+id/button_stop_advertising"
-         android:layout_alignParentBottom="true"
          android:layout_alignParentRight="true"
          android:layout_below="@+id/button_stop_advertising"
+         android:layout_above="@+id/textview_peripheral_uuid"
+         android:text="" />
+
+     <TextView
+         android:id="@+id/textview_peripheral_uuid"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignParentLeft="true"
+         android:layout_alignParentBottom="true"
+         android:layout_alignParentRight="true"
          android:text="" />
 
 </RelativeLayout>

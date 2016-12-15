@@ -20,8 +20,17 @@
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:layout_below="@+id/button_send_abc_central"
-         android:layout_alignParentBottom="true"
+         android:layout_above="@+id/textview_central_uuid"
          android:layout_alignParentLeft="true"
+         android:layout_alignParentRight="true"
+         android:text="" />
+
+     <TextView
+         android:id="@+id/textview_central_uuid"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignParentLeft="true"
+         android:layout_alignParentBottom="true"
          android:layout_alignParentRight="true"
          android:text="" />
 

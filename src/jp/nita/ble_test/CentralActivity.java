@@ -62,9 +62,11 @@ public class CentralActivity extends Activity {
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
 				showToastAsync(finalActivity, "state changed to connected");
+				finalActivity.setUuidTextAsync(finalActivity, gatt.getDevice().getAddress());
 				gatt.discoverServices();
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 				showToastAsync(finalActivity, "state changed to disconnected");
+				finalActivity.setUuidTextAsync(finalActivity, "");
 				if (mBleGatt != null) {
 					mBleGatt.close();
 					mBleGatt = null;
@@ -201,6 +203,20 @@ public class CentralActivity extends Activity {
 					TextView textView = ((TextView) (activity.findViewById(R.id.textview_central)));
 					String newString = text + "\n" + textView.getText();
 					textView.setText(newString);
+				}
+			}
+		});
+	}
+	
+	public void setUuidTextAsync(final CentralActivity activity ,final String text) {
+		guiThreadHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				if (CentralActivity.this != null) {
+					// Toast.makeText(PeripheralActivity.this, text,
+					// Toast.LENGTH_SHORT).show();
+					TextView textView = ((TextView) (activity.findViewById(R.id.textview_central_uuid)));
+					textView.setText(text);
 				}
 			}
 		});
