@@ -73,7 +73,23 @@ public class PeripheralActivity extends Activity {
 			@Override
 			public void onStartFailure(int errorCode) {
 				super.onStartFailure(errorCode);
-				showToastAsync(activity, "start failed : "+errorCode);
+				
+				String description = "";
+				if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_FEATURE_UNSUPPORTED) {
+					description = "ADVERTISE_FAILED_FEATURE_UNSUPPORTED";
+				} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_TOO_MANY_ADVERTISERS) {
+					description = "ADVERTISE_FAILED_TOO_MANY_ADVERTISERS";
+				} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_ALREADY_STARTED) {
+					description = "ADVERTISE_FAILED_ALREADY_STARTED";
+				} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE) {
+					description = "ADVERTISE_FAILED_DATA_TOO_LARGE";
+				} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_INTERNAL_ERROR) {
+					description = "ADVERTISE_FAILED_INTERNAL_ERROR";
+				} else {
+					description = "" + errorCode;
+				}
+
+				showToastAsync(activity, "start failed : "+description);
 			}
 		});
 
@@ -102,6 +118,13 @@ public class PeripheralActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				
+				//サーバーを閉じる
+		        if (gattServer != null) {
+		            gattServer.clearServices();
+		            gattServer.close();
+		            gattServer = null;
+		        }
+		        
 		        //アドバタイズを停止
 		        if (mAdvertiser != null) {
 		        	mAdvertiser.stopAdvertising(new AdvertiseCallback(){
@@ -119,13 +142,6 @@ public class PeripheralActivity extends Activity {
 		        	});
 		        	mAdvertiser = null;
 		        }
-				
-				//サーバーを閉じる
-		        if (gattServer != null) {
-		            gattServer.clearServices();
-		            gattServer.close();
-		            gattServer = null;
-		        }
 			}
 		});
 	}
@@ -133,6 +149,25 @@ public class PeripheralActivity extends Activity {
 	@Override
 	public void onPause(){
 		super.onPause();
+		
+		final PeripheralActivity finalActivity = this;
+		
+        if (mAdvertiser != null) {
+        	mAdvertiser.stopAdvertising(new AdvertiseCallback(){
+        		@Override
+    			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
+    				super.onStartSuccess(settingsInEffect);
+    				showToastAsync(finalActivity, "stop succeeded");
+    			}
+
+    			@Override
+    			public void onStartFailure(int errorCode) {
+    				super.onStartFailure(errorCode);
+    				showToastAsync(finalActivity, "stop failed : "+errorCode);
+    			}
+        	});
+        	mAdvertiser = null;
+        }
 	}
 
 	public void setGattServer() {
