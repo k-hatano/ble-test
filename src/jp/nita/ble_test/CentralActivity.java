@@ -3,6 +3,7 @@ package jp.nita.ble_test;
 import java.util.Timer;
 import java.util.UUID;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
@@ -15,6 +16,8 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
@@ -43,7 +46,7 @@ public class CentralActivity extends Activity {
 
 	private static final String SERVICE_UUID = "0A917941-40E4-40E8-81B8-146FD1F2479A";
 	private static final String CHAR_UUID = "0015D5AE-2653-4BB1-8EE1-AF566EE846DC";
-	private static final String CHAR_CONFIG_UUID = "00002902-0000-1000-8000-00805f9b34fb";
+	private static final String CHAR_CONFIG_UUID = "00002902-0000-1000-8000-00805f9b34fb"; 
 
 	private final LeScanCallback mScanCallback = new BluetoothAdapter.LeScanCallback() {
 		@Override
@@ -161,6 +164,22 @@ public class CentralActivity extends Activity {
 
 	private void scanNewDevice() {
 		mBluetoothAdapter.startLeScan(mScanCallback);
+	}
+
+	private void startScanByBleScanner() {
+		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+		mBluetoothLeScanner.startScan(new ScanCallback() {
+			@Override
+			public void onScanResult(int callbackType, ScanResult result) {
+				super.onScanResult(callbackType, result);
+				result.getDevice().connectGatt(getApplicationContext(), false, mGattCallback);
+			}
+
+			@Override
+			public void onScanFailed(int intErrorCode) {
+				super.onScanFailed(intErrorCode);
+			}
+		});
 	}
 
 	@Override
