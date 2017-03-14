@@ -73,10 +73,6 @@ public class CentralActivity extends Activity {
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 				showToastAsync(finalActivity, "state changed to disconnected");
 				finalActivity.setUuidTextAsync(finalActivity, "");
-				if (mBleGatt != null) {
-					mBleGatt.close();
-					mBleGatt = null;
-				}
 				mIsBluetoothEnable = false;
 			}
 		}
@@ -232,7 +228,7 @@ public class CentralActivity extends Activity {
 		// 画面遷移時は通信を切断する.
 		mIsBluetoothEnable = false;
 		if (mBleGatt != null) {
-			mBleGatt.close();
+			mBleGatt.disconnect();
 			mBleGatt = null;
 		}
 		super.onDestroy();
