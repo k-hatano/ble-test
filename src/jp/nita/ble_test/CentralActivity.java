@@ -44,8 +44,8 @@ public class CentralActivity extends Activity {
 	private final static int MESSAGE_NEW_RECEIVEDNUM = 0;
 	private final static int MESSAGE_NEW_SENDNUM = 1;
 
-	private static final String SERVICE_UUID = "0A917941-40E4-40E8-81B8-146FD1F2479A";
-	private static final String CHAR_UUID = "0015D5AE-2653-4BB1-8EE1-AF566EE846DC";
+	private static final String SERVICE_UUID = "9FA480E0-4967-4542-9390-D343DC5D04AE";
+	private static final String CHAR_UUID = "AF0BADB1-5B99-43CD-917A-A77BC549E3CC";
 	private static final String CHAR_CONFIG_UUID = "00002902-0000-1000-8000-00805f9b34fb"; 
 
 	private final LeScanCallback mScanCallback = new BluetoothAdapter.LeScanCallback() {
@@ -142,7 +142,7 @@ public class CentralActivity extends Activity {
 		
 		final CentralActivity activity = this;
 		
-		findViewById(R.id.button_send_abc_central).setOnClickListener(new View.OnClickListener() {
+		findViewById(R.id.button_send_00_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				if (mBleGatt == null) {
@@ -153,10 +153,35 @@ public class CentralActivity extends Activity {
 					showToastAsync(activity, "mBleCharacteristic is null");
 					return;
 				}
+				
+				byte[] bytes = {00};
+				
 				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
 				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
 
-				myChar.setValue("ABC".getBytes());
+				myChar.setValue(bytes);
+				mBleGatt.writeCharacteristic(myChar);
+			}
+		});
+		
+		findViewById(R.id.button_send_01_central).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mBleGatt == null) {
+					showToastAsync(activity, "mBleGatt is null");
+					return;
+				}
+				if (mBleCharacteristic == null) {
+					showToastAsync(activity, "mBleCharacteristic is null");
+					return;
+				}
+				
+				byte[] bytes = {01};
+				
+				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
+				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
+
+				myChar.setValue(bytes);
 				mBleGatt.writeCharacteristic(myChar);
 			}
 		});

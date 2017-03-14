@@ -33,8 +33,8 @@ public class PeripheralActivity extends Activity {
 
 	Handler guiThreadHandler = new Handler();
 
-	private static final String SERVICE_UUID = "0A917941-40E4-40E8-81B8-146FD1F2479A";
-	private static final String CHAR_UUID = "0015D5AE-2653-4BB1-8EE1-AF566EE846DC";
+	private static final String SERVICE_UUID = "9FA480E0-4967-4542-9390-D343DC5D04AE";
+	private static final String CHAR_UUID = "AF0BADB1-5B99-43CD-917A-A77BC549E3CC";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +93,7 @@ public class PeripheralActivity extends Activity {
 			}
 		});
 
-		findViewById(R.id.button_send_abc).setOnClickListener(new View.OnClickListener() {
+		findViewById(R.id.button_send_00).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				if (gattServer == null) {
@@ -108,7 +108,29 @@ public class PeripheralActivity extends Activity {
 					showToastAsync(activity, "mCharacteristic is null");
 					return;
 				}
-				mCharacteristic.setValue("ABC".getBytes());
+				byte[] bytes = {00};
+				mCharacteristic.setValue(bytes);
+				gattServer.notifyCharacteristicChanged(mDevice, mCharacteristic, false);
+			}
+		});
+		
+		findViewById(R.id.button_send_01).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (gattServer == null) {
+					showToastAsync(activity, "gattServer is null");
+					return;
+				}
+				if (mDevice == null) {
+					showToastAsync(activity, "mDevice is null");
+					return;
+				}
+				if (mCharacteristic == null) {
+					showToastAsync(activity, "mCharacteristic is null");
+					return;
+				}
+				byte[] bytes = {01};
+				mCharacteristic.setValue(bytes);
 				gattServer.notifyCharacteristicChanged(mDevice, mCharacteristic, false);
 			}
 		});

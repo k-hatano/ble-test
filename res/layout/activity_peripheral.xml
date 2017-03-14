@@ -9,10 +9,18 @@
     tools:context="jp.nita.ble_test.PeripheralActivity" >
 
     <Button 
-        android:id="@+id/button_send_abc"
+        android:id="@+id/button_send_00"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send ABC"
+        android:text="Send 00"
+        />
+    
+    <Button 
+        android:id="@+id/button_send_01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/button_send_00"
+        android:text="Send 01"
         />
     
      <Button 
@@ -20,7 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Stop Advertising"
-        android:layout_below="@+id/button_send_abc"
+        android:layout_below="@+id/button_send_00"
         />
 
      <TextView

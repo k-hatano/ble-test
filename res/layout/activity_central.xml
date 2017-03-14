@@ -9,17 +9,25 @@
     tools:context="jp.nita.ble_test.CentralActivity" >
     
     <Button 
-        android:id="@+id/button_send_abc_central"
+        android:id="@+id/button_send_00_central"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send ABC"
+        android:text="Send 00"
+        />
+    
+    <Button 
+        android:id="@+id/button_send_01_central"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/button_send_00_central"
+        android:text="Send 01"
         />
     
      <TextView
          android:id="@+id/textview_central"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:layout_below="@+id/button_send_abc_central"
+         android:layout_below="@+id/button_send_00_central"
          android:layout_above="@+id/textview_central_uuid"
          android:layout_alignParentLeft="true"
          android:layout_alignParentRight="true"
