@@ -54,7 +54,9 @@ public class CentralActivity extends Activity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					mBleGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
+					if (mBleGatt == null) {
+						mBleGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
+					}
 				}
 			});
 		}
@@ -188,7 +190,11 @@ public class CentralActivity extends Activity {
 	}
 
 	private void scanNewDevice() {
-		mBluetoothAdapter.startLeScan(mScanCallback);
+		if (Build.VERSION.SDK_INT >= 5.0) {
+			this.startScanByBleScanner();
+		} else {
+			mBluetoothAdapter.startLeScan(mScanCallback);
+		}
 	}
 
 	private void startScanByBleScanner() {
