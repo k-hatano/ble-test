@@ -19,6 +19,7 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -139,10 +140,23 @@ public class CentralActivity extends Activity {
 
 		mBluetoothAdapter = bluetoothManager.getAdapter();
 		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+		
+		if ((mBluetoothAdapter == null) || (!mBluetoothAdapter.isEnabled())) {
+			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivity(enableBtIntent);
+			return;
+		}
 
 		this.scanNewDevice();
 		
 		final CentralActivity activity = this;
+		
+		findViewById(R.id.button_re_scan).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				CentralActivity.this.scanNewDevice();
+			}
+		});
 		
 		findViewById(R.id.button_send_00_central).setOnClickListener(new View.OnClickListener() {
 			@Override

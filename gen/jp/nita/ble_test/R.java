@@ -25,18 +25,19 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f08000b;
-        public static final int button_central=0x7f080004;
-        public static final int button_peripheral=0x7f080005;
-        public static final int button_send_00=0x7f080006;
-        public static final int button_send_00_central=0x7f080000;
-        public static final int button_send_01=0x7f080007;
-        public static final int button_send_01_central=0x7f080001;
-        public static final int button_stop_advertising=0x7f080008;
-        public static final int textview_central=0x7f080002;
-        public static final int textview_central_uuid=0x7f080003;
-        public static final int textview_peripheral=0x7f080009;
-        public static final int textview_peripheral_uuid=0x7f08000a;
+        public static final int action_settings=0x7f08000c;
+        public static final int button_central=0x7f080005;
+        public static final int button_peripheral=0x7f080006;
+        public static final int button_re_scan=0x7f080000;
+        public static final int button_send_00=0x7f080007;
+        public static final int button_send_00_central=0x7f080001;
+        public static final int button_send_01=0x7f080008;
+        public static final int button_send_01_central=0x7f080002;
+        public static final int button_stop_advertising=0x7f080009;
+        public static final int textview_central=0x7f080003;
+        public static final int textview_central_uuid=0x7f080004;
+        public static final int textview_peripheral=0x7f08000a;
+        public static final int textview_peripheral_uuid=0x7f08000b;
     }
     public static final class layout {
         public static final int activity_central=0x7f030000;

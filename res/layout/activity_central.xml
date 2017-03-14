@@ -9,9 +9,17 @@
     tools:context="jp.nita.ble_test.CentralActivity" >
     
     <Button 
+        android:id="@+id/button_re_scan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Re-scan"
+        />
+    
+    <Button 
         android:id="@+id/button_send_00_central"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/button_re_scan"
         android:text="Send 00"
         />
     
