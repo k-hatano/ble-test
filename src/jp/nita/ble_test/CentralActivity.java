@@ -38,7 +38,7 @@ public class CentralActivity extends Activity {
 	private BluetoothGattCharacteristic mBleCharacteristic;
 
 	Handler guiThreadHandler = new Handler();
-	
+
 	private String mStrReceivedNum = "";
 	private Timer mTimer;
 
@@ -47,7 +47,7 @@ public class CentralActivity extends Activity {
 
 	private static final String SERVICE_UUID = "9FA480E0-4967-4542-9390-D343DC5D04AE";
 	private static final String CHAR_UUID = "AF0BADB1-5B99-43CD-917A-A77BC549E3CC";
-	private static final String CHAR_CONFIG_UUID = "00002902-0000-1000-8000-00805f9b34fb"; 
+	private static final String CHAR_CONFIG_UUID = "00002902-0000-1000-8000-00805f9b34fb";
 
 	private final LeScanCallback mScanCallback = new BluetoothAdapter.LeScanCallback() {
 		@Override
@@ -136,7 +136,7 @@ public class CentralActivity extends Activity {
 
 		mBluetoothAdapter = bluetoothManager.getAdapter();
 		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-		
+
 		if ((mBluetoothAdapter == null) || (!mBluetoothAdapter.isEnabled())) {
 			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			startActivity(enableBtIntent);
@@ -144,16 +144,16 @@ public class CentralActivity extends Activity {
 		}
 
 		this.scanNewDevice();
-		
+
 		final CentralActivity activity = this;
-		
+
 		findViewById(R.id.button_re_scan).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				CentralActivity.this.scanNewDevice();
 			}
 		});
-		
+
 		findViewById(R.id.button_send_00_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -165,9 +165,9 @@ public class CentralActivity extends Activity {
 					showToastAsync(activity, "mBleCharacteristic is null");
 					return;
 				}
-				
+
 				byte[] bytes = {00};
-				
+
 				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
 				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
 
@@ -175,7 +175,7 @@ public class CentralActivity extends Activity {
 				mBleGatt.writeCharacteristic(myChar);
 			}
 		});
-		
+
 		findViewById(R.id.button_send_01_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -187,9 +187,9 @@ public class CentralActivity extends Activity {
 					showToastAsync(activity, "mBleCharacteristic is null");
 					return;
 				}
-				
+
 				byte[] bytes = {01};
-				
+
 				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
 				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
 
@@ -229,6 +229,7 @@ public class CentralActivity extends Activity {
 		mIsBluetoothEnable = false;
 		if (mBleGatt != null) {
 			mBleGatt.disconnect();
+			mBleGatt.close();
 			mBleGatt = null;
 		}
 		super.onDestroy();
@@ -252,7 +253,7 @@ public class CentralActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 	public void showToastAsync(final CentralActivity activity ,final String text) {
 		guiThreadHandler.post(new Runnable() {
 			@Override
@@ -267,7 +268,7 @@ public class CentralActivity extends Activity {
 			}
 		});
 	}
-	
+
 	public void setUuidTextAsync(final CentralActivity activity ,final String text) {
 		guiThreadHandler.post(new Runnable() {
 			@Override
