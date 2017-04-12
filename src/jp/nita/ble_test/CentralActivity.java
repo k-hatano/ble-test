@@ -80,17 +80,14 @@ public class CentralActivity extends Activity {
 					showToastAsync(activity, "mBleGatt is null");
 					return;
 				}
-				if (mBleCharacteristic == null) {
-					showToastAsync(activity, "mBleCharacteristic is null");
+				if (mIsBluetoothEnable == false) {
+					showToastAsync(activity, "mIsBluetoothEnable is false");
 					return;
 				}
 
 				byte[] bytes = {00};
-				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
-				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
-
-				myChar.setValue(bytes);
-				mBleGatt.writeCharacteristic(myChar);
+				mBleCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mBleCharacteristic);
 			}
 		});
 
@@ -101,17 +98,14 @@ public class CentralActivity extends Activity {
 					showToastAsync(activity, "mBleGatt is null");
 					return;
 				}
-				if (mBleCharacteristic == null) {
-					showToastAsync(activity, "mBleCharacteristic is null");
+				if (mIsBluetoothEnable == false) {
+					showToastAsync(activity, "mIsBluetoothEnable is false");
 					return;
 				}
 
 				byte[] bytes = {01};
-				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
-				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
-
-				myChar.setValue(bytes);
-				mBleGatt.writeCharacteristic(myChar);
+				mBleCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mBleCharacteristic);
 			}
 		});
 	}
@@ -147,6 +141,7 @@ public class CentralActivity extends Activity {
 				public void run() {
 					if (mBleGatt == null) {
 						mBleGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
+						showToastAsync(finalActivity, "scanning gatt : " + mBleGatt.hashCode());
 					}
 				}
 			});
@@ -157,13 +152,16 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
-				showToastAsync(finalActivity, "state changed to connected");
-				finalActivity.setUuidTextAsync(finalActivity, gatt.getDevice().getAddress());
+				showToastAsync(finalActivity, "connected to gatt : " + gatt.hashCode());
 				gatt.discoverServices();
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-				showToastAsync(finalActivity, "state changed to disconnected");
-				finalActivity.setUuidTextAsync(finalActivity, "");
+				showToastAsync(finalActivity, "disconnected from gatt : " + gatt.hashCode());
+				if (mBleGatt != null) {
+					mBleGatt.close();
+					mBleGatt = null;
+				}
 				mIsBluetoothEnable = false;
+				finalActivity.setUuidTextAsync(finalActivity, "");
 			}
 		}
 
@@ -185,6 +183,8 @@ public class CentralActivity extends Activity {
 						descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 						mBleGatt.writeDescriptor(descriptor);
 						mIsBluetoothEnable = true;
+						
+						finalActivity.setUuidTextAsync(finalActivity, gatt.getDevice().getAddress());
 					}
 				}
 			}
@@ -193,7 +193,7 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 			if (CentralActivity.CHAR_UUID.equals(characteristic.getUuid().toString().toUpperCase())) {
-				showToastAsync(finalActivity, "characteristic changed : " + CentralActivity.CHAR_UUID);
+				showToastAsync(finalActivity, "characteristic changed : " + characteristic.hashCode());
 				mStrReceivedNum = characteristic.getStringValue(0);
 				mBleHandler.sendEmptyMessage(MESSAGE_NEW_RECEIVEDNUM);
 			}
@@ -204,7 +204,6 @@ public class CentralActivity extends Activity {
 	protected void onDestroy() {
 		mIsBluetoothEnable = false;
 		if (mBleGatt != null) {
-			mBleGatt.disconnect();
 			mBleGatt.close();
 			mBleGatt = null;
 		}
