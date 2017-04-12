@@ -46,6 +46,99 @@ public class CentralActivity extends Activity {
 	private static final String CHAR_UUID = "AF0BADB1-5B99-43CD-917A-A77BC549E3CC";
 	private static final String CHAR_CONFIG_UUID = "00002902-0000-1000-8000-00805f9b34fb";
 
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_central);
+
+		BluetoothManager bluetoothManager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
+
+		mBluetoothAdapter = bluetoothManager.getAdapter();
+		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+
+		if ((mBluetoothAdapter == null) || (!mBluetoothAdapter.isEnabled())) {
+			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivity(enableBtIntent);
+			return;
+		}
+
+		this.scanNewDevice();
+
+		final CentralActivity activity = this;
+
+		findViewById(R.id.button_re_scan).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				CentralActivity.this.scanNewDevice();
+			}
+		});
+
+		findViewById(R.id.button_send_00_central).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mBleGatt == null) {
+					showToastAsync(activity, "mBleGatt is null");
+					return;
+				}
+				if (mBleCharacteristic == null) {
+					showToastAsync(activity, "mBleCharacteristic is null");
+					return;
+				}
+
+				byte[] bytes = {00};
+				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
+				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
+
+				myChar.setValue(bytes);
+				mBleGatt.writeCharacteristic(myChar);
+			}
+		});
+
+		findViewById(R.id.button_send_01_central).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mBleGatt == null) {
+					showToastAsync(activity, "mBleGatt is null");
+					return;
+				}
+				if (mBleCharacteristic == null) {
+					showToastAsync(activity, "mBleCharacteristic is null");
+					return;
+				}
+
+				byte[] bytes = {01};
+				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
+				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
+
+				myChar.setValue(bytes);
+				mBleGatt.writeCharacteristic(myChar);
+			}
+		});
+	}
+
+	private void scanNewDevice() {
+		if (Build.VERSION.SDK_INT >= 5.0) {
+			this.startScanByBleScanner();
+		} else {
+			mBluetoothAdapter.startLeScan(mScanCallback);
+		}
+	}
+
+	private void startScanByBleScanner() {
+		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+		mBluetoothLeScanner.startScan(new ScanCallback() {
+			@Override
+			public void onScanResult(int callbackType, ScanResult result) {
+				super.onScanResult(callbackType, result);
+				result.getDevice().connectGatt(getApplicationContext(), false, mGattCallback);
+			}
+			@Override
+			public void onScanFailed(int intErrorCode) {
+				super.onScanFailed(intErrorCode);
+			}
+		});
+	}
+	
 	private final LeScanCallback mScanCallback = new BluetoothAdapter.LeScanCallback() {
 		@Override
 		public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
@@ -107,6 +200,17 @@ public class CentralActivity extends Activity {
 		}
 	};
 
+	@Override
+	protected void onDestroy() {
+		mIsBluetoothEnable = false;
+		if (mBleGatt != null) {
+			mBleGatt.disconnect();
+			mBleGatt.close();
+			mBleGatt = null;
+		}
+		super.onDestroy();
+	}
+	
 	final CentralActivity finalActivity = this;
 
 	private Handler mBleHandler = new Handler() {
@@ -121,128 +225,7 @@ public class CentralActivity extends Activity {
 			}
 		}
 	};
-
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_central);
-
-		BluetoothManager bluetoothManager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
-
-		mBluetoothAdapter = bluetoothManager.getAdapter();
-		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-
-		if ((mBluetoothAdapter == null) || (!mBluetoothAdapter.isEnabled())) {
-			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-			startActivity(enableBtIntent);
-			return;
-		}
-
-		this.scanNewDevice();
-
-		final CentralActivity activity = this;
-
-		findViewById(R.id.button_re_scan).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				CentralActivity.this.scanNewDevice();
-			}
-		});
-
-		findViewById(R.id.button_send_00_central).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if (mBleGatt == null) {
-					showToastAsync(activity, "mBleGatt is null");
-					return;
-				}
-				if (mBleCharacteristic == null) {
-					showToastAsync(activity, "mBleCharacteristic is null");
-					return;
-				}
-
-				byte[] bytes = {00};
-
-				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
-				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
-
-				myChar.setValue(bytes);
-				mBleGatt.writeCharacteristic(myChar);
-			}
-		});
-
-		findViewById(R.id.button_send_01_central).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if (mBleGatt == null) {
-					showToastAsync(activity, "mBleGatt is null");
-					return;
-				}
-				if (mBleCharacteristic == null) {
-					showToastAsync(activity, "mBleCharacteristic is null");
-					return;
-				}
-
-				byte[] bytes = {01};
-				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
-				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
-
-				myChar.setValue(bytes);
-				mBleGatt.writeCharacteristic(myChar);
-			}
-		});
-	}
-
-	private void scanNewDevice() {
-		if (Build.VERSION.SDK_INT >= 5.0) {
-			this.startScanByBleScanner();
-		} else {
-			mBluetoothAdapter.startLeScan(mScanCallback);
-		}
-	}
-
-	private void startScanByBleScanner() {
-		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-		mBluetoothLeScanner.startScan(new ScanCallback() {
-			@Override
-			public void onScanResult(int callbackType, ScanResult result) {
-				super.onScanResult(callbackType, result);
-				result.getDevice().connectGatt(getApplicationContext(), false, mGattCallback);
-			}
-
-			@Override
-			public void onScanFailed(int intErrorCode) {
-				super.onScanFailed(intErrorCode);
-			}
-		});
-	}
-
-	@Override
-	protected void onDestroy() {
-		mIsBluetoothEnable = false;
-		if (mBleGatt != null) {
-			mBleGatt.disconnect();
-			mBleGatt.close();
-			mBleGatt = null;
-		}
-		super.onDestroy();
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.central, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
-
+	
 	public void showToastAsync(final CentralActivity activity ,final String text) {
 		guiThreadHandler.post(new Runnable() {
 			@Override
@@ -267,4 +250,20 @@ public class CentralActivity extends Activity {
 			}
 		});
 	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.central, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		int id = item.getItemId();
+		if (id == R.id.action_settings) {
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+	
 }
