@@ -1,9 +1,7 @@
 package jp.nita.ble_test;
 
-import java.util.Timer;
 import java.util.UUID;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
@@ -40,7 +38,6 @@ public class CentralActivity extends Activity {
 	Handler guiThreadHandler = new Handler();
 
 	private String mStrReceivedNum = "";
-	private Timer mTimer;
 
 	private final static int MESSAGE_NEW_RECEIVEDNUM = 0;
 	private final static int MESSAGE_NEW_SENDNUM = 1;
@@ -88,8 +85,6 @@ public class CentralActivity extends Activity {
 					if (mBleCharacteristic != null) {
 						showToastAsync(finalActivity, "found characteristic : " + CentralActivity.CHAR_UUID);
 						mBleGatt = gatt;
-
-						boolean registered = mBleGatt.setCharacteristicNotification(mBleCharacteristic, true);
 
 						BluetoothGattDescriptor descriptor = mBleCharacteristic
 								.getDescriptor(UUID.fromString(CentralActivity.CHAR_CONFIG_UUID));
@@ -189,7 +184,6 @@ public class CentralActivity extends Activity {
 				}
 
 				byte[] bytes = {01};
-
 				BluetoothGattService myService = mBleGatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
 				BluetoothGattCharacteristic myChar = myService.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
 
@@ -225,7 +219,6 @@ public class CentralActivity extends Activity {
 
 	@Override
 	protected void onDestroy() {
-		// 画面遷移時は通信を切断する.
 		mIsBluetoothEnable = false;
 		if (mBleGatt != null) {
 			mBleGatt.disconnect();
@@ -237,16 +230,12 @@ public class CentralActivity extends Activity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.central, menu);
 		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
 			return true;
@@ -259,8 +248,6 @@ public class CentralActivity extends Activity {
 			@Override
 			public void run() {
 				if (CentralActivity.this != null) {
-					// Toast.makeText(PeripheralActivity.this, text,
-					// Toast.LENGTH_SHORT).show();
 					TextView textView = ((TextView) (activity.findViewById(R.id.textview_central)));
 					String newString = text + "\n" + textView.getText();
 					textView.setText(newString);
@@ -274,8 +261,6 @@ public class CentralActivity extends Activity {
 			@Override
 			public void run() {
 				if (CentralActivity.this != null) {
-					// Toast.makeText(PeripheralActivity.this, text,
-					// Toast.LENGTH_SHORT).show();
 					TextView textView = ((TextView) (activity.findViewById(R.id.textview_central_uuid)));
 					textView.setText(text);
 				}

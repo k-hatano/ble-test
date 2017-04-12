@@ -139,15 +139,12 @@ public class PeripheralActivity extends Activity {
 		findViewById(R.id.button_stop_advertising).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				
-				//サーバーを閉じる
 		        if (gattServer != null) {
 		            gattServer.clearServices();
 		            gattServer.close();
 		            gattServer = null;
 		        }
 		        
-		        //アドバタイズを停止
 		        if (mAdvertiser != null) {
 		        	mAdvertiser.stopAdvertising(new AdvertiseCallback(){
 		        		@Override
@@ -254,8 +251,6 @@ public class PeripheralActivity extends Activity {
 			@Override
 			public void run() {
 				if (PeripheralActivity.this != null) {
-					// showToastAsync(PeripheralActivity.this, text,
-					// Toast.LENGTH_SHORT).show();
 					TextView textView = ((TextView) (activity.findViewById(R.id.textview_peripheral)));
 					String newString = text + "\n" + textView.getText();
 					textView.setText(newString);
@@ -269,8 +264,6 @@ public class PeripheralActivity extends Activity {
 			@Override
 			public void run() {
 				if (PeripheralActivity.this != null) {
-					// Toast.makeText(PeripheralActivity.this, text,
-					// Toast.LENGTH_SHORT).show();
 					TextView textView = ((TextView) (activity.findViewById(R.id.textview_peripheral_uuid)));
 					textView.setText(text);
 				}
