@@ -139,10 +139,8 @@ public class CentralActivity extends Activity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					if (mBleGatt == null) {
-						mBleGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
-						showToastAsync(finalActivity, "scanning gatt : " + mBleGatt.hashCode());
-					}
+					mBleGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
+					showToastAsync(finalActivity, "scanning gatt : " + mBleGatt.getDevice().getAddress());
 				}
 			});
 		}
@@ -152,10 +150,10 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
-				showToastAsync(finalActivity, "connected to gatt : " + gatt.hashCode());
+				showToastAsync(finalActivity, "connected to gatt : " + gatt.getDevice().getAddress());
 				gatt.discoverServices();
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-				showToastAsync(finalActivity, "disconnected from gatt : " + gatt.hashCode());
+				showToastAsync(finalActivity, "disconnected from gatt : " + gatt.getDevice().getAddress());
 				if (mBleGatt != null) {
 					mBleGatt.close();
 					mBleGatt = null;
@@ -176,6 +174,7 @@ public class CentralActivity extends Activity {
 					if (mBleCharacteristic != null) {
 						showToastAsync(finalActivity, "found characteristic : " + CentralActivity.CHAR_UUID);
 						mBleGatt = gatt;
+			            boolean registered = mBleGatt.setCharacteristicNotification(mBleCharacteristic, true);
 
 						BluetoothGattDescriptor descriptor = mBleCharacteristic
 								.getDescriptor(UUID.fromString(CentralActivity.CHAR_CONFIG_UUID));
@@ -193,7 +192,7 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 			if (CentralActivity.CHAR_UUID.equals(characteristic.getUuid().toString().toUpperCase())) {
-				showToastAsync(finalActivity, "characteristic changed : " + characteristic.hashCode());
+				showToastAsync(finalActivity, "characteristic changed : " + characteristic.getUuid());
 				mStrReceivedNum = characteristic.getStringValue(0);
 				mBleHandler.sendEmptyMessage(MESSAGE_NEW_RECEIVEDNUM);
 			}
