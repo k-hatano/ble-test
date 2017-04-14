@@ -139,8 +139,10 @@ public class CentralActivity extends Activity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					mBleGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
-					showToastAsync(finalActivity, "scanning gatt : " + mBleGatt.getDevice().getAddress());
+					if (mBleGatt == null) {
+						mBleGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
+						showToastAsync(finalActivity, "scanning gatt : " + mBleGatt.getDevice().getAddress());
+					}
 				}
 			});
 		}
@@ -154,12 +156,12 @@ public class CentralActivity extends Activity {
 				gatt.discoverServices();
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 				showToastAsync(finalActivity, "disconnected from gatt : " + gatt.getDevice().getAddress());
-				if (mBleGatt != null) {
+				if (mBleGatt != null && mBleGatt.getDevice().getAddress().equals(gatt.getDevice().getAddress())) {
 					mBleGatt.close();
 					mBleGatt = null;
+					mIsBluetoothEnable = false;
+					finalActivity.setUuidTextAsync(finalActivity, "");
 				}
-				mIsBluetoothEnable = false;
-				finalActivity.setUuidTextAsync(finalActivity, "");
 			}
 		}
 
@@ -182,6 +184,7 @@ public class CentralActivity extends Activity {
 						descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 						mBleGatt.writeDescriptor(descriptor);
 						mIsBluetoothEnable = true;
+						showToastAsync(finalActivity, "connect succceeded : " + mBleGatt.getDevice().getName());
 						
 						finalActivity.setUuidTextAsync(finalActivity, gatt.getDevice().getAddress());
 					}
