@@ -108,6 +108,24 @@ public class CentralActivity extends Activity {
 				mBleGatt.writeCharacteristic(mBleCharacteristic);
 			}
 		});
+		
+		findViewById(R.id.button_send_abc_central).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mBleGatt == null) {
+					showToastAsync(activity, "mBleGatt is null");
+					return;
+				}
+				if (mIsBluetoothEnable == false) {
+					showToastAsync(activity, "mIsBluetoothEnable is false");
+					return;
+				}
+
+				byte[] bytes = {'A', 'B', 'C', 0};
+				mBleCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mBleCharacteristic);
+			}
+		});
 	}
 
 	private void scanNewDevice() {
@@ -156,7 +174,7 @@ public class CentralActivity extends Activity {
 				gatt.discoverServices();
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 				showToastAsync(finalActivity, "disconnected from gatt : " + gatt.getDevice().getAddress());
-				if (mBleGatt != null && mBleGatt.getDevice().getAddress().equals(gatt.getDevice().getAddress())) {
+				if (mBleGatt != null && mBleGatt.hashCode() == gatt.hashCode()) {
 					mBleGatt.close();
 					mBleGatt = null;
 					mIsBluetoothEnable = false;

@@ -135,6 +135,27 @@ public class PeripheralActivity extends Activity {
 			}
 		});
 		
+		findViewById(R.id.button_send_abc).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (gattServer == null) {
+					showToastAsync(activity, "gattServer is null");
+					return;
+				}
+				if (mDevice == null) {
+					showToastAsync(activity, "mDevice is null");
+					return;
+				}
+				if (mCharacteristic == null) {
+					showToastAsync(activity, "mCharacteristic is null");
+					return;
+				}
+				byte[] bytes = {'a', 'b', 'c', 0};
+				mCharacteristic.setValue(bytes);
+				gattServer.notifyCharacteristicChanged(mDevice, mCharacteristic, false);
+			}
+		});
+		
 		final PeripheralActivity finalActivity = this;
 		findViewById(R.id.button_stop_advertising).setOnClickListener(new View.OnClickListener() {
 			@Override

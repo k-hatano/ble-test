@@ -7,47 +7,61 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="jp.nita.ble_test.CentralActivity" >
-    
-    <Button 
-        android:id="@+id/button_re_scan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Re-scan"
-        />
-    
-    <Button 
-        android:id="@+id/button_send_00_central"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/button_re_scan"
-        android:text="Send 00"
-        />
-    
-    <Button 
-        android:id="@+id/button_send_01_central"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/button_send_00_central"
-        android:text="Send 01"
-        />
-    
-     <TextView
-         android:id="@+id/textview_central"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_below="@+id/button_send_00_central"
-         android:layout_above="@+id/textview_central_uuid"
-         android:layout_alignParentLeft="true"
-         android:layout_alignParentRight="true"
-         android:text="" />
 
-     <TextView
-         android:id="@+id/textview_central_uuid"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_alignParentLeft="true"
-         android:layout_alignParentBottom="true"
-         android:layout_alignParentRight="true"
-         android:text="" />
+    <LinearLayout
+        android:id="@+id/linearlayout_re_scan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/button_re_scan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Re-scan" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearlayout_send"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearlayout_re_scan" >
+
+        <Button
+            android:id="@+id/button_send_00_central"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send 00" />
+
+        <Button
+            android:id="@+id/button_send_01_central"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send 01" />
+
+        <Button
+            android:id="@+id/button_send_abc_central"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send ABC" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textview_central"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textview_central_uuid"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/linearlayout_send"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/textview_central_uuid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:text="" />
 
 </RelativeLayout>
