@@ -85,7 +85,7 @@ public class CentralActivity extends Activity {
 					return;
 				}
 
-				byte[] bytes = {00};
+				byte[] bytes = { 00 };
 				mBleCharacteristic.setValue(bytes);
 				mBleGatt.writeCharacteristic(mBleCharacteristic);
 			}
@@ -103,12 +103,12 @@ public class CentralActivity extends Activity {
 					return;
 				}
 
-				byte[] bytes = {01};
+				byte[] bytes = { 01 };
 				mBleCharacteristic.setValue(bytes);
 				mBleGatt.writeCharacteristic(mBleCharacteristic);
 			}
 		});
-		
+
 		findViewById(R.id.button_send_abc_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -121,7 +121,7 @@ public class CentralActivity extends Activity {
 					return;
 				}
 
-				byte[] bytes = {'A', 'B', 'C', 0};
+				byte[] bytes = { 'A', 'B', 'C', 0 };
 				mBleCharacteristic.setValue(bytes);
 				mBleGatt.writeCharacteristic(mBleCharacteristic);
 			}
@@ -132,25 +132,42 @@ public class CentralActivity extends Activity {
 		if (Build.VERSION.SDK_INT >= 5.0) {
 			this.startScanByBleScanner();
 		} else {
+			guiThreadHandler.postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					mBluetoothAdapter.stopLeScan(mScanCallback);
+				}
+			}, 10000);
+
 			mBluetoothAdapter.startLeScan(mScanCallback);
 		}
 	}
 
 	private void startScanByBleScanner() {
 		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-		mBluetoothLeScanner.startScan(new ScanCallback() {
+		final ScanCallback scanCallback = new ScanCallback() {
 			@Override
 			public void onScanResult(int callbackType, ScanResult result) {
 				super.onScanResult(callbackType, result);
 				result.getDevice().connectGatt(getApplicationContext(), false, mGattCallback);
 			}
+
 			@Override
 			public void onScanFailed(int intErrorCode) {
 				super.onScanFailed(intErrorCode);
 			}
-		});
+		};
+
+		guiThreadHandler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				mBluetoothLeScanner.stopScan(scanCallback);
+			}
+		}, 10000);
+
+		mBluetoothLeScanner.startScan(scanCallback);
 	}
-	
+
 	private final LeScanCallback mScanCallback = new BluetoothAdapter.LeScanCallback() {
 		@Override
 		public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
@@ -194,7 +211,7 @@ public class CentralActivity extends Activity {
 					if (mBleCharacteristic != null) {
 						showToastAsync(finalActivity, "found characteristic : " + CentralActivity.CHAR_UUID);
 						mBleGatt = gatt;
-			            boolean registered = mBleGatt.setCharacteristicNotification(mBleCharacteristic, true);
+						boolean registered = mBleGatt.setCharacteristicNotification(mBleCharacteristic, true);
 
 						BluetoothGattDescriptor descriptor = mBleCharacteristic
 								.getDescriptor(UUID.fromString(CentralActivity.CHAR_CONFIG_UUID));
@@ -203,7 +220,7 @@ public class CentralActivity extends Activity {
 						mBleGatt.writeDescriptor(descriptor);
 						mIsBluetoothEnable = true;
 						showToastAsync(finalActivity, "connect succceeded : " + mBleGatt.getDevice().getName());
-						
+
 						finalActivity.setUuidTextAsync(finalActivity, gatt.getDevice().getAddress());
 					}
 				}
@@ -229,7 +246,7 @@ public class CentralActivity extends Activity {
 		}
 		super.onDestroy();
 	}
-	
+
 	final CentralActivity finalActivity = this;
 
 	private Handler mBleHandler = new Handler() {
@@ -244,8 +261,8 @@ public class CentralActivity extends Activity {
 			}
 		}
 	};
-	
-	public void showToastAsync(final CentralActivity activity ,final String text) {
+
+	public void showToastAsync(final CentralActivity activity, final String text) {
 		guiThreadHandler.post(new Runnable() {
 			@Override
 			public void run() {
@@ -258,7 +275,7 @@ public class CentralActivity extends Activity {
 		});
 	}
 
-	public void setUuidTextAsync(final CentralActivity activity ,final String text) {
+	public void setUuidTextAsync(final CentralActivity activity, final String text) {
 		guiThreadHandler.post(new Runnable() {
 			@Override
 			public void run() {
@@ -284,5 +301,5 @@ public class CentralActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 }
