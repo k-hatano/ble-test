@@ -1,6 +1,9 @@
 package jp.nita.ble_test;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -31,6 +34,15 @@ public class MainActivity extends Activity {
 			}
 			
 		});
+
+		BluetoothManager bluetoothManager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
+		BluetoothAdapter adapter = bluetoothManager.getAdapter();
+
+		if ((adapter == null) || (!adapter.isEnabled())) {
+			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivity(enableBtIntent);
+			return;
+		}
 	}
 
 }

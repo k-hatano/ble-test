@@ -42,8 +42,8 @@ public class CentralActivity extends Activity {
 	private final static int MESSAGE_NEW_RECEIVEDNUM = 0;
 	private final static int MESSAGE_NEW_SENDNUM = 1;
 
-	private static final String SERVICE_UUID = "9FA480E0-4967-4542-9390-D343DC5D04AE";
-	private static final String CHAR_UUID = "AF0BADB1-5B99-43CD-917A-A77BC549E3CC";
+	private static final String SERVICE_UUID = "7865087B-D9D0-423A-9C80-042D9BBEA524";
+	private static final String CHAR_UUID = "608072DD-6825-4293-B3E7-324CF0B5CA08";
 	private static final String CHAR_CONFIG_UUID = "00002902-0000-1000-8000-00805f9b34fb";
 
 	@Override
@@ -174,10 +174,8 @@ public class CentralActivity extends Activity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					if (mBleGatt == null) {
-						mBleGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
-						showToastAsync(finalActivity, "scanning gatt : " + mBleGatt.getDevice().getAddress());
-					}
+					mBleGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
+					showToastAsync(finalActivity, "scanning gatt : " + mBleGatt.getDevice().getAddress());
 				}
 			});
 		}
@@ -187,11 +185,12 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
-				showToastAsync(finalActivity, "connected to gatt : " + gatt.getDevice().getAddress());
-				gatt.discoverServices();
+				showToastAsync(finalActivity, "discover services : " + gatt.getDevice().getAddress());
+				mBleGatt.discoverServices();
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-				showToastAsync(finalActivity, "disconnected from gatt : " + gatt.getDevice().getAddress());
-				if (mBleGatt != null && mBleGatt.hashCode() == gatt.hashCode()) {
+				showToastAsync(finalActivity, "disconnected : " + gatt.getDevice().getAddress());
+				if (mBleGatt != null) {
+					showToastAsync(finalActivity, "closed : " + mBleGatt.getDevice().getAddress());
 					mBleGatt.close();
 					mBleGatt = null;
 					mIsBluetoothEnable = false;
@@ -205,11 +204,11 @@ public class CentralActivity extends Activity {
 			if (status == BluetoothGatt.GATT_SUCCESS) {
 				BluetoothGattService service = gatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
 				if (service != null) {
-					showToastAsync(finalActivity, "found service : " + CentralActivity.SERVICE_UUID);
+					showToastAsync(finalActivity, "found service : " + service.getUuid().toString());
 					mBleCharacteristic = service.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
 
 					if (mBleCharacteristic != null) {
-						showToastAsync(finalActivity, "found characteristic : " + CentralActivity.CHAR_UUID);
+						showToastAsync(finalActivity, "found char : " + mBleCharacteristic.getUuid().toString());
 						mBleGatt = gatt;
 						boolean registered = mBleGatt.setCharacteristicNotification(mBleCharacteristic, true);
 
@@ -219,7 +218,7 @@ public class CentralActivity extends Activity {
 						descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 						mBleGatt.writeDescriptor(descriptor);
 						mIsBluetoothEnable = true;
-						showToastAsync(finalActivity, "connect succceeded : " + mBleGatt.getDevice().getName());
+						showToastAsync(finalActivity, "char matches : " + mBleGatt.getDevice().getName());
 
 						finalActivity.setUuidTextAsync(finalActivity, gatt.getDevice().getAddress());
 					}
@@ -230,7 +229,7 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 			if (CentralActivity.CHAR_UUID.equals(characteristic.getUuid().toString().toUpperCase())) {
-				showToastAsync(finalActivity, "characteristic changed : " + characteristic.getUuid());
+				showToastAsync(finalActivity, "char changed : " + characteristic.getUuid());
 				mStrReceivedNum = characteristic.getStringValue(0);
 				mBleHandler.sendEmptyMessage(MESSAGE_NEW_RECEIVEDNUM);
 			}

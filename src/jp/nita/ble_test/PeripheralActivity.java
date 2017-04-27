@@ -33,8 +33,8 @@ public class PeripheralActivity extends Activity {
 
 	Handler guiThreadHandler = new Handler();
 
-	private static final String SERVICE_UUID = "9FA480E0-4967-4542-9390-D343DC5D04AE";
-	private static final String CHAR_UUID = "AF0BADB1-5B99-43CD-917A-A77BC549E3CC";
+	private static final String SERVICE_UUID = "7865087B-D9D0-423A-9C80-042D9BBEA524";
+	private static final String CHAR_UUID = "608072DD-6825-4293-B3E7-324CF0B5CA08";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +67,7 @@ public class PeripheralActivity extends Activity {
 			@Override
 			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
 				super.onStartSuccess(settingsInEffect);
-				showToastAsync(activity, "start succeeded");
+				showToastAsync(activity, "started");
 			}
 
 			@Override
@@ -171,7 +171,7 @@ public class PeripheralActivity extends Activity {
 		        		@Override
 		    			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
 		    				super.onStartSuccess(settingsInEffect);
-		    				showToastAsync(finalActivity, "stop succeeded");
+		    				showToastAsync(finalActivity, "stopped");
 		    			}
 
 		    			@Override
@@ -197,7 +197,7 @@ public class PeripheralActivity extends Activity {
         		@Override
     			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
     				super.onStartSuccess(settingsInEffect);
-    				showToastAsync(finalActivity, "stop succeeded");
+    				showToastAsync(finalActivity, "stopped");
     			}
 
     			@Override
@@ -223,7 +223,7 @@ public class PeripheralActivity extends Activity {
 				super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded,
 						offset, value);
 				if (value != null) {
-					showToastAsync(finalActivity, "get characteristic write request : " + new String(value));
+					showToastAsync(finalActivity, "get char write request : " + new String(value));
 					Log.d("TAG", "value ~ " + new String(value));
 				}
 				gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null);
@@ -233,7 +233,7 @@ public class PeripheralActivity extends Activity {
 			public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset,
 					BluetoothGattCharacteristic characteristic) {
 				super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
-				showToastAsync(finalActivity, "get characteristic read request");
+				showToastAsync(finalActivity, "get char read request");
 				gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, "ABC".getBytes());
 			}
 
@@ -241,11 +241,11 @@ public class PeripheralActivity extends Activity {
 			public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
 				super.onConnectionStateChange(device, status, newState);
 				if (newState == BluetoothProfile.STATE_CONNECTED) {
-					showToastAsync(finalActivity ,"state changed to connected");
+					showToastAsync(finalActivity ,"connected : " + device.getAddress());
 					finalActivity.setUuidTextAsync(finalActivity, device.getAddress());
 					mDevice = device;
 				} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-					showToastAsync(finalActivity, "state changed to disconnected");
+					showToastAsync(finalActivity, "disconnected : " + device.getAddress());
 					finalActivity.setUuidTextAsync(finalActivity, "");
 					mDevice = null;
 				}
