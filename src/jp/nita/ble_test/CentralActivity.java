@@ -72,6 +72,18 @@ public class CentralActivity extends Activity {
 				CentralActivity.this.scanNewDevice();
 			}
 		});
+		
+		findViewById(R.id.button_disconnect).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mBleGatt == null) {
+					showToastAsync(activity, "mBleGatt is null");
+					return;
+				}
+				
+				mBleGatt.disconnect();
+			}
+		});
 
 		findViewById(R.id.button_send_00_central).setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -161,10 +173,12 @@ public class CentralActivity extends Activity {
 		guiThreadHandler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
+				showToastAsync(finalActivity, "scanning stopped");
 				mBluetoothLeScanner.stopScan(scanCallback);
 			}
 		}, 10000);
 
+		showToastAsync(finalActivity, "scanning started");
 		mBluetoothLeScanner.startScan(scanCallback);
 	}
 
@@ -174,8 +188,8 @@ public class CentralActivity extends Activity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					mBleGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
-					showToastAsync(finalActivity, "scanning gatt : " + mBleGatt.getDevice().getAddress());
+					BluetoothGatt gatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
+					showToastAsync(finalActivity, "scanning gatt : " + gatt.getDevice().getAddress());
 				}
 			});
 		}
@@ -186,16 +200,15 @@ public class CentralActivity extends Activity {
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
 				showToastAsync(finalActivity, "discover services : " + gatt.getDevice().getAddress());
-				mBleGatt.discoverServices();
+				gatt.discoverServices();
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 				showToastAsync(finalActivity, "disconnected : " + gatt.getDevice().getAddress());
-				if (mBleGatt != null) {
-					showToastAsync(finalActivity, "closed : " + mBleGatt.getDevice().getAddress());
-					mBleGatt.close();
+				if (mBleGatt.getDevice().getAddress().equals(gatt.getDevice().getAddress())) {
 					mBleGatt = null;
 					mIsBluetoothEnable = false;
 					finalActivity.setUuidTextAsync(finalActivity, "");
 				}
+				gatt.close();
 			}
 		}
 
