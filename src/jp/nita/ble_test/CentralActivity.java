@@ -161,7 +161,7 @@ public class CentralActivity extends Activity {
 			@Override
 			public void onScanResult(int callbackType, ScanResult result) {
 				super.onScanResult(callbackType, result);
-				result.getDevice().connectGatt(getApplicationContext(), false, mGattCallback);
+				result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
 			}
 
 			@Override
@@ -235,6 +235,8 @@ public class CentralActivity extends Activity {
 
 						finalActivity.setUuidTextAsync(finalActivity, gatt.getDevice().getAddress());
 					}
+				} else {
+					gatt.disconnect();
 				}
 			}
 		}
@@ -242,10 +244,10 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 			if (CentralActivity.CHAR_UUID.equals(characteristic.getUuid().toString().toUpperCase())) {
-				showToastAsync(finalActivity, "char changed : " + characteristic.getUuid());
 				mStrReceivedNum = characteristic.getStringValue(0);
+				showToastAsync(finalActivity, "char changed : " + mStrReceivedNum);
 				mBleHandler.sendEmptyMessage(MESSAGE_NEW_RECEIVEDNUM);
-			}
+			}		
 		}
 	};
 
