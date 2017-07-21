@@ -46,14 +46,20 @@
             android:text="Stop Advertising" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textview_peripheral"
+    <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/textview_peripheral_uuid"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/linearlayout_advertise"
-        android:text="" />
+        android:layout_below="@+id/linearlayout_advertise" >
+
+        <TextView
+            android:id="@+id/textview_peripheral"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="" />
+    </ScrollView>
 
     <TextView
         android:id="@+id/textview_peripheral_uuid"

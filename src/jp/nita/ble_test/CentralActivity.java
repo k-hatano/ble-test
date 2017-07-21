@@ -1,8 +1,10 @@
 package jp.nita.ble_test;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
@@ -17,6 +19,7 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,6 +37,8 @@ public class CentralActivity extends Activity {
 	private BluetoothGatt mBleGatt;
 	private boolean mIsBluetoothEnable = false;
 	private BluetoothGattCharacteristic mBleCharacteristic;
+	
+	private HashMap<String, BluetoothDevice> foundDevices = new HashMap<String, BluetoothDevice>();
 
 	Handler guiThreadHandler = new Handler();
 
@@ -41,10 +46,6 @@ public class CentralActivity extends Activity {
 
 	private final static int MESSAGE_NEW_RECEIVEDNUM = 0;
 	private final static int MESSAGE_NEW_SENDNUM = 1;
-
-	private static final String SERVICE_UUID = "7865087B-D9D0-423A-9C80-042D9BBEA524";
-	private static final String CHAR_UUID = "608072DD-6825-4293-B3E7-324CF0B5CA08";
-	private static final String CHAR_CONFIG_UUID = "00002902-0000-1000-8000-00805f9b34fb";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +63,7 @@ public class CentralActivity extends Activity {
 			return;
 		}
 
+		foundDevices = new HashMap<String, BluetoothDevice>();
 		this.scanNewDevice();
 
 		final CentralActivity activity = this;
@@ -70,6 +72,30 @@ public class CentralActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				CentralActivity.this.scanNewDevice();
+			}
+		});
+		
+		findViewById(R.id.button_connect_to_a_found_device).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (foundDevices.size() <= 0) {
+					showToastAsync(finalActivity, "No devices found.");
+				} else {
+					final String list[] = new String[foundDevices.size()];
+					int i = 0;
+					for (String address : foundDevices.keySet()) {
+						list[i] = address;
+						i++;
+					}
+					new AlertDialog.Builder(finalActivity).setTitle("Select device")
+					.setItems(list, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface arg0, int arg1) {
+							showToastAsync(finalActivity, "Connecting to " + list[arg1]);
+							foundDevices.get(list[arg1]).connectGatt(getApplicationContext(), true, mGattCallback);
+						}
+					}).show();
+				}
 			}
 		});
 		
@@ -215,10 +241,10 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onServicesDiscovered(BluetoothGatt gatt, int status) {
 			if (status == BluetoothGatt.GATT_SUCCESS) {
-				BluetoothGattService service = gatt.getService(UUID.fromString(CentralActivity.SERVICE_UUID));
+				BluetoothGattService service = gatt.getService(UUID.fromString(MainActivity.SERVICE_UUID));
 				if (service != null) {
 					showToastAsync(finalActivity, "found service : " + service.getUuid().toString());
-					mBleCharacteristic = service.getCharacteristic(UUID.fromString(CentralActivity.CHAR_UUID));
+					mBleCharacteristic = service.getCharacteristic(UUID.fromString(MainActivity.CHAR_UUID));
 
 					if (mBleCharacteristic != null) {
 						showToastAsync(finalActivity, "found char : " + mBleCharacteristic.getUuid().toString());
@@ -226,12 +252,16 @@ public class CentralActivity extends Activity {
 						boolean registered = mBleGatt.setCharacteristicNotification(mBleCharacteristic, true);
 
 						BluetoothGattDescriptor descriptor = mBleCharacteristic
-								.getDescriptor(UUID.fromString(CentralActivity.CHAR_CONFIG_UUID));
+								.getDescriptor(UUID.fromString(MainActivity.CHAR_CONFIG_UUID));
 
 						descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 						mBleGatt.writeDescriptor(descriptor);
 						mIsBluetoothEnable = true;
 						showToastAsync(finalActivity, "char matches : " + mBleGatt.getDevice().getName());
+						
+						if (!CentralActivity.this.foundDevices.containsKey(mBleGatt.getDevice().getAddress())) {
+							CentralActivity.this.foundDevices.put(mBleGatt.getDevice().getAddress(), mBleGatt.getDevice());
+						}
 
 						finalActivity.setUuidTextAsync(finalActivity, gatt.getDevice().getAddress());
 					}
@@ -243,7 +273,7 @@ public class CentralActivity extends Activity {
 
 		@Override
 		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-			if (CentralActivity.CHAR_UUID.equals(characteristic.getUuid().toString().toUpperCase())) {
+			if (MainActivity.CHAR_UUID.equals(characteristic.getUuid().toString().toUpperCase())) {
 				mStrReceivedNum = characteristic.getStringValue(0);
 				showToastAsync(finalActivity, "char changed : " + mStrReceivedNum);
 				mBleHandler.sendEmptyMessage(MESSAGE_NEW_RECEIVEDNUM);

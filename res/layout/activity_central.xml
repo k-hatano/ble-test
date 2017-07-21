@@ -18,7 +18,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Re-scan" />
-        
+
+        <Button
+            android:id="@+id/button_connect_to_a_found_device"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Re-connect" />
+
         <Button
             android:id="@+id/button_disconnect"
             android:layout_width="wrap_content"
@@ -51,15 +57,20 @@
             android:text="Send ABC" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textview_central"
+    <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/textview_central_uuid"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/linearlayout_send"
-        android:text="" />
+        android:layout_below="@+id/linearlayout_send" >
+
+        <TextView
+            android:id="@+id/textview_central"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="" />
+    </ScrollView>
 
     <TextView
         android:id="@+id/textview_central_uuid"

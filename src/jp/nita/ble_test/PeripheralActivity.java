@@ -33,8 +33,7 @@ public class PeripheralActivity extends Activity {
 
 	Handler guiThreadHandler = new Handler();
 
-	private static final String SERVICE_UUID = "7865087B-D9D0-423A-9C80-042D9BBEA524";
-	private static final String CHAR_UUID = "608072DD-6825-4293-B3E7-324CF0B5CA08";
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +57,7 @@ public class PeripheralActivity extends Activity {
 		AdvertiseSettings settings = settingBuilder.build();
 
 		AdvertiseData.Builder dataBuilder = new AdvertiseData.Builder();
-		dataBuilder.addServiceUuid(new ParcelUuid(UUID.fromString(SERVICE_UUID)));
+		dataBuilder.addServiceUuid(new ParcelUuid(UUID.fromString(MainActivity.SERVICE_UUID)));
 		AdvertiseData advertiseData = dataBuilder.build();
 
 		setGattServer();
@@ -257,9 +256,9 @@ public class PeripheralActivity extends Activity {
 			return;
 		}
 
-		BluetoothGattService service = new BluetoothGattService(UUID.fromString(SERVICE_UUID),
+		BluetoothGattService service = new BluetoothGattService(UUID.fromString(MainActivity.SERVICE_UUID),
 				BluetoothGattService.SERVICE_TYPE_PRIMARY);
-		mCharacteristic = new BluetoothGattCharacteristic(UUID.fromString(CHAR_UUID),
+		mCharacteristic = new BluetoothGattCharacteristic(UUID.fromString(MainActivity.CHAR_UUID),
 				BluetoothGattCharacteristic.PROPERTY_NOTIFY | BluetoothGattCharacteristic.PROPERTY_READ
 						| BluetoothGattCharacteristic.PROPERTY_WRITE,
 				BluetoothGattCharacteristic.PERMISSION_READ | BluetoothGattCharacteristic.PERMISSION_WRITE);
