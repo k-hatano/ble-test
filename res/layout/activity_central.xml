@@ -42,19 +42,37 @@
             android:id="@+id/button_send_00_central"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Send 00" />
+            android:text="00" />
 
         <Button
             android:id="@+id/button_send_01_central"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Send 01" />
+            android:text="01" />
+        
+        <Button
+            android:id="@+id/button_send_02_central"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="02" />
+        
+        <Button
+            android:id="@+id/button_send_03_central"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="03" />
+        
+        <Button
+            android:id="@+id/button_send_04_central"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="04" />
 
         <Button
             android:id="@+id/button_send_abc_central"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Send ABC" />
+            android:text="ABC" />
     </LinearLayout>
 
     <ScrollView

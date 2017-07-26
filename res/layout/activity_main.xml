@@ -22,5 +22,21 @@
         android:text="Peripheral"
         android:layout_below="@+id/button_central"
         />
+
+    <TextView
+        android:id="@+id/textview_service_uuid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_above="@+id/textview_characteristic_uuid"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/textview_characteristic_uuid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:text="TextView" />
     
 </RelativeLayout>

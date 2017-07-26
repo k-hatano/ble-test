@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	
@@ -38,6 +39,9 @@ public class MainActivity extends Activity {
 			}
 			
 		});
+		
+		((TextView)findViewById(R.id.textview_service_uuid)).setText("Service : " + SERVICE_UUID);
+		((TextView)findViewById(R.id.textview_characteristic_uuid)).setText("Service : " + CHAR_UUID);
 
 		BluetoothManager bluetoothManager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
 		BluetoothAdapter adapter = bluetoothManager.getAdapter();

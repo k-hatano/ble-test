@@ -1,6 +1,7 @@
 package jp.nita.ble_test;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.UUID;
 
 import android.app.Activity;
@@ -64,6 +65,7 @@ public class CentralActivity extends Activity {
 		}
 
 		foundDevices = new HashMap<String, BluetoothDevice>();
+		this.scanPairedDevices();
 		this.scanNewDevice();
 
 		final CentralActivity activity = this;
@@ -71,6 +73,7 @@ public class CentralActivity extends Activity {
 		findViewById(R.id.button_re_scan).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				CentralActivity.this.scanPairedDevices();
 				CentralActivity.this.scanNewDevice();
 			}
 		});
@@ -146,6 +149,60 @@ public class CentralActivity extends Activity {
 				mBleGatt.writeCharacteristic(mBleCharacteristic);
 			}
 		});
+		
+		findViewById(R.id.button_send_02_central).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mBleGatt == null) {
+					showToastAsync(activity, "mBleGatt is null");
+					return;
+				}
+				if (mIsBluetoothEnable == false) {
+					showToastAsync(activity, "mIsBluetoothEnable is false");
+					return;
+				}
+
+				byte[] bytes = { 02 };
+				mBleCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mBleCharacteristic);
+			}
+		});
+		
+		findViewById(R.id.button_send_03_central).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mBleGatt == null) {
+					showToastAsync(activity, "mBleGatt is null");
+					return;
+				}
+				if (mIsBluetoothEnable == false) {
+					showToastAsync(activity, "mIsBluetoothEnable is false");
+					return;
+				}
+
+				byte[] bytes = { 03 };
+				mBleCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mBleCharacteristic);
+			}
+		});
+		
+		findViewById(R.id.button_send_04_central).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mBleGatt == null) {
+					showToastAsync(activity, "mBleGatt is null");
+					return;
+				}
+				if (mIsBluetoothEnable == false) {
+					showToastAsync(activity, "mIsBluetoothEnable is false");
+					return;
+				}
+
+				byte[] bytes = { 04 };
+				mBleCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mBleCharacteristic);
+			}
+		});
 
 		findViewById(R.id.button_send_abc_central).setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -164,6 +221,19 @@ public class CentralActivity extends Activity {
 				mBleGatt.writeCharacteristic(mBleCharacteristic);
 			}
 		});
+	}
+	
+	private void scanPairedDevices() {
+		showToastAsync(finalActivity, "trying to connect to paired devices");
+		BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+		Set<BluetoothDevice> btDevices = btAdapter.getBondedDevices();
+		for (BluetoothDevice device : btDevices) {
+			int type = device.getType();
+			if (type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL) {
+				showToastAsync(finalActivity, "connecting to paired device " + device.getAddress());
+				device.connectGatt(getApplicationContext(), true, mGattCallback);
+			}
+		}
 	}
 
 	private void scanNewDevice() {
@@ -214,8 +284,8 @@ public class CentralActivity extends Activity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
+					showToastAsync(finalActivity, "connecting to scanned device " + device.getAddress());
 					BluetoothGatt gatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
-					showToastAsync(finalActivity, "scanning gatt : " + gatt.getDevice().getAddress());
 				}
 			});
 		}
@@ -249,7 +319,7 @@ public class CentralActivity extends Activity {
 					if (mBleCharacteristic != null) {
 						showToastAsync(finalActivity, "found char : " + mBleCharacteristic.getUuid().toString());
 						mBleGatt = gatt;
-						boolean registered = mBleGatt.setCharacteristicNotification(mBleCharacteristic, true);
+						// TODO: スキャンしているだけの時はいきなりgattに登録しない
 
 						BluetoothGattDescriptor descriptor = mBleCharacteristic
 								.getDescriptor(UUID.fromString(MainActivity.CHAR_CONFIG_UUID));
