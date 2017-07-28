@@ -15,6 +15,7 @@ import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
@@ -34,7 +35,6 @@ public class PeripheralActivity extends Activity {
 	Handler guiThreadHandler = new Handler();
 
 	
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -42,6 +42,13 @@ public class PeripheralActivity extends Activity {
 
 		BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
 		BluetoothAdapter adapter = manager.getAdapter();
+		
+		if ((adapter == null) || (!adapter.isEnabled())) {
+			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivity(enableBtIntent);
+			return;
+		}
+		
 		if (!adapter.isMultipleAdvertisementSupported()) {
 			showToastAsync(this, "multi advertisement not supported");
 		}
@@ -60,10 +67,10 @@ public class PeripheralActivity extends Activity {
 		}
 
 		AdvertiseSettings.Builder settingBuilder = new AdvertiseSettings.Builder();
-		settingBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_POWER);
+		settingBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED);
 		settingBuilder.setConnectable(true);
 		settingBuilder.setTimeout(10000);
-		settingBuilder.setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_ULTRA_LOW);
+		settingBuilder.setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_LOW);
 		AdvertiseSettings settings = settingBuilder.build();
 
 		AdvertiseData.Builder dataBuilder = new AdvertiseData.Builder();
@@ -224,6 +231,32 @@ public class PeripheralActivity extends Activity {
         	mAdvertiser = null;
         }
 	}
+	
+	@Override
+	protected void onDestroy() {
+		if (gattServer != null) {
+            gattServer.clearServices();
+            gattServer.close();
+            gattServer = null;
+        }
+		
+        if (mAdvertiser != null) {
+        	mAdvertiser.stopAdvertising(new AdvertiseCallback(){
+        		@Override
+    			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
+    				super.onStartSuccess(settingsInEffect);
+    			}
+
+    			@Override
+    			public void onStartFailure(int errorCode) {
+    				super.onStartFailure(errorCode);
+    			}
+        	});
+        	mAdvertiser = null;
+        }
+		
+		super.onDestroy();
+	}
 
 	public void setGattServer() {
 
@@ -256,11 +289,11 @@ public class PeripheralActivity extends Activity {
 			public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
 				super.onConnectionStateChange(device, status, newState);
 				if (newState == BluetoothProfile.STATE_CONNECTED) {
-					showToastAsync(finalActivity ,"connected : " + device.getAddress());
-					finalActivity.setUuidTextAsync(finalActivity, device.getAddress());
+					showToastAsync(finalActivity ,"connected : " + device.getAddress() + " / " + device.getName());
+					finalActivity.setUuidTextAsync(finalActivity, device.getAddress() + " / " + device.getName());
 					mDevice = device;
 				} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-					showToastAsync(finalActivity, "disconnected : " + device.getAddress());
+					showToastAsync(finalActivity, "disconnected : " + device.getAddress() + " / " + device.getName());
 					finalActivity.setUuidTextAsync(finalActivity, "");
 					mDevice = null;
 				}

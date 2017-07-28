@@ -13,11 +13,12 @@
     </uses-permission>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" >
     </uses-permission>
+	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" >
+	</uses-permission>
     <!-- BluetoothLEのみを使用 -->
     <uses-feature
         android:name="android.hardware.bluetooth_le"
         android:required="true" />
-	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     
     <application
         android:allowBackup="true"
