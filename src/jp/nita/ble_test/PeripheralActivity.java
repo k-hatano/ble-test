@@ -42,6 +42,16 @@ public class PeripheralActivity extends Activity {
 
 		BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
 		BluetoothAdapter adapter = manager.getAdapter();
+		if (!adapter.isMultipleAdvertisementSupported()) {
+			showToastAsync(this, "multi advertisement not supported");
+		}
+		if (!adapter.isOffloadedFilteringSupported()) {
+			showToastAsync(this, "offload filtering not supported");
+		}
+		if (!adapter.isOffloadedScanBatchingSupported()) {
+			showToastAsync(this, "offloaded scan batching not supported");
+		}
+		
 		mAdvertiser = adapter.getBluetoothLeAdvertiser();
 		if (mAdvertiser == null) {
 			showToastAsync(this, "mAdvertiser is null");
@@ -50,9 +60,9 @@ public class PeripheralActivity extends Activity {
 		}
 
 		AdvertiseSettings.Builder settingBuilder = new AdvertiseSettings.Builder();
-		settingBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY);
+		settingBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_POWER);
 		settingBuilder.setConnectable(true);
-		settingBuilder.setTimeout(0);
+		settingBuilder.setTimeout(10000);
 		settingBuilder.setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_ULTRA_LOW);
 		AdvertiseSettings settings = settingBuilder.build();
 
@@ -190,6 +200,12 @@ public class PeripheralActivity extends Activity {
 		super.onPause();
 		
 		final PeripheralActivity finalActivity = this;
+		
+		if (gattServer != null) {
+            gattServer.clearServices();
+            gattServer.close();
+            gattServer = null;
+        }
 		
         if (mAdvertiser != null) {
         	mAdvertiser.stopAdvertising(new AdvertiseCallback(){

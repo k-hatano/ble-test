@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
 		});
 		
 		((TextView)findViewById(R.id.textview_service_uuid)).setText("Service : " + SERVICE_UUID);
-		((TextView)findViewById(R.id.textview_characteristic_uuid)).setText("Service : " + CHAR_UUID);
+		((TextView)findViewById(R.id.textview_characteristic_uuid)).setText("Characteristic : " + CHAR_UUID);
 
 		BluetoothManager bluetoothManager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
 		BluetoothAdapter adapter = bluetoothManager.getAdapter();

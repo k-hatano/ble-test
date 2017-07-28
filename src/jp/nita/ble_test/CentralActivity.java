@@ -230,8 +230,8 @@ public class CentralActivity extends Activity {
 		for (BluetoothDevice device : btDevices) {
 			int type = device.getType();
 			if (type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL) {
-				showToastAsync(finalActivity, "connecting to paired device " + device.getAddress());
-				device.connectGatt(getApplicationContext(), true, mGattCallback);
+				showToastAsync(finalActivity, "connecting to paired " + device.getAddress());
+				device.connectGatt(getApplicationContext(), false, mGattCallback);
 			}
 		}
 	}
@@ -257,6 +257,7 @@ public class CentralActivity extends Activity {
 			@Override
 			public void onScanResult(int callbackType, ScanResult result) {
 				super.onScanResult(callbackType, result);
+				showToastAsync(finalActivity, "connecting to scanned device : " + result.getDevice().getAddress());
 				result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
 			}
 
@@ -284,7 +285,7 @@ public class CentralActivity extends Activity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					showToastAsync(finalActivity, "connecting to scanned device " + device.getAddress());
+					showToastAsync(finalActivity, "connecting to scanned " + device.getAddress());
 					BluetoothGatt gatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
 				}
 			});
