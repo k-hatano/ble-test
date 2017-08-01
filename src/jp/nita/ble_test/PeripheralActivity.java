@@ -75,11 +75,12 @@ public class PeripheralActivity extends Activity {
 
 		AdvertiseData.Builder dataBuilder = new AdvertiseData.Builder();
 		dataBuilder.addServiceUuid(new ParcelUuid(UUID.fromString(MainActivity.SERVICE_UUID)));
+		dataBuilder.setIncludeDeviceName(false);
 		AdvertiseData advertiseData = dataBuilder.build();
 
-		setGattServer();
+		gattServer = setGattServer();
 		final PeripheralActivity activity = this;
-		mAdvertiser.startAdvertising(settings, advertiseData, new AdvertiseCallback() {
+		final AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
 			@Override
 			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
 				super.onStartSuccess(settingsInEffect);
@@ -106,8 +107,11 @@ public class PeripheralActivity extends Activity {
 				}
 
 				showToastAsync(activity, "start failed : "+description);
-			}
-		});
+			};
+		};
+		
+		mAdvertiser.stopAdvertising(advertiseCallback);
+		mAdvertiser.startAdvertising(settings, advertiseData, advertiseCallback);
 
 		findViewById(R.id.button_send_00).setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -258,12 +262,12 @@ public class PeripheralActivity extends Activity {
 		super.onDestroy();
 	}
 
-	public void setGattServer() {
+	public BluetoothGattServer setGattServer() {
 
 		BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
 		final PeripheralActivity finalActivity = this;
 
-		gattServer = manager.openGattServer(getApplicationContext(), new BluetoothGattServerCallback() {
+		BluetoothGattServer gatt = manager.openGattServer(getApplicationContext(), new BluetoothGattServerCallback() {
 			@Override
 			public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId,
 					BluetoothGattCharacteristic characteristic, boolean preparedWrite, boolean responseNeeded,
@@ -300,9 +304,9 @@ public class PeripheralActivity extends Activity {
 			}
 		});
 		
-		if (gattServer == null) {
+		if (gatt == null) {
 			showToastAsync(finalActivity, "making gattServer failed");
-			return;
+			return null;
 		}
 
 		BluetoothGattService service = new BluetoothGattService(UUID.fromString(MainActivity.SERVICE_UUID),
@@ -312,7 +316,9 @@ public class PeripheralActivity extends Activity {
 						| BluetoothGattCharacteristic.PROPERTY_WRITE,
 				BluetoothGattCharacteristic.PERMISSION_READ | BluetoothGattCharacteristic.PERMISSION_WRITE);
 		service.addCharacteristic(mCharacteristic);
-		gattServer.addService(service);
+		gatt.addService(service);
+		
+		return gatt;
 	}
 
 	public void showToastAsync(final PeripheralActivity activity ,final String text) {
