@@ -233,6 +233,11 @@ public class CentralActivity extends Activity {
 				showToastAsync(finalActivity, "connecting : " + device.getAddress() + " / " + device.getName());
 				device.connectGatt(getApplicationContext(), false, mGattCallback);
 			}
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -273,7 +278,7 @@ public class CentralActivity extends Activity {
 				mBluetoothLeScanner.stopScan(scanCallback);
 				showToastAsync(finalActivity, "scanning stopped");
 			}
-		}, 20000);
+		}, 10000);
 
 		mBluetoothLeScanner.startScan(scanCallback);
 		showToastAsync(finalActivity, "scanning started");
@@ -297,7 +302,9 @@ public class CentralActivity extends Activity {
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
 				showToastAsync(finalActivity, "connected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
-				gatt.discoverServices();
+				if (gatt.getServices().size() == 0) {
+					gatt.discoverServices();
+				}
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 				showToastAsync(finalActivity, "disconnected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
 				if (mBleGatt.getDevice().getAddress().equals(gatt.getDevice().getAddress())) {
@@ -335,6 +342,8 @@ public class CentralActivity extends Activity {
 						}
 
 						finalActivity.setUuidTextAsync(finalActivity, mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
+					} else {
+						gatt.disconnect();
 					}
 				} else {
 					gatt.disconnect();

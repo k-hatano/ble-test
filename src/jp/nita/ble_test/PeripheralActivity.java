@@ -67,9 +67,9 @@ public class PeripheralActivity extends Activity {
 		}
 
 		AdvertiseSettings.Builder settingBuilder = new AdvertiseSettings.Builder();
-		settingBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED);
+		settingBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_POWER);
 		settingBuilder.setConnectable(true);
-		settingBuilder.setTimeout(10000);
+		settingBuilder.setTimeout(0);
 		settingBuilder.setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_LOW);
 		AdvertiseSettings settings = settingBuilder.build();
 
@@ -110,7 +110,6 @@ public class PeripheralActivity extends Activity {
 			};
 		};
 		
-		mAdvertiser.stopAdvertising(advertiseCallback);
 		mAdvertiser.startAdvertising(settings, advertiseData, advertiseCallback);
 
 		findViewById(R.id.button_send_00).setOnClickListener(new View.OnClickListener() {
