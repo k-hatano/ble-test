@@ -31,6 +31,7 @@ public class PeripheralActivity extends Activity {
 	BluetoothDevice mDevice;
 	BluetoothGattCharacteristic mCharacteristic;
 	BluetoothLeAdvertiser mAdvertiser;
+	AdvertiseCallback mAdvertiseCallback;
 
 	Handler guiThreadHandler = new Handler();
 
@@ -69,7 +70,7 @@ public class PeripheralActivity extends Activity {
 		AdvertiseSettings.Builder settingBuilder = new AdvertiseSettings.Builder();
 		settingBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_POWER);
 		settingBuilder.setConnectable(true);
-		settingBuilder.setTimeout(0);
+		settingBuilder.setTimeout(10000);
 		settingBuilder.setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_LOW);
 		AdvertiseSettings settings = settingBuilder.build();
 
@@ -80,11 +81,11 @@ public class PeripheralActivity extends Activity {
 
 		gattServer = setGattServer();
 		final PeripheralActivity activity = this;
-		final AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
+		mAdvertiseCallback = new AdvertiseCallback() {
 			@Override
 			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
 				super.onStartSuccess(settingsInEffect);
-				showToastAsync(activity, "started");
+				showToastAsync(activity, "started advertising");
 			}
 
 			@Override
@@ -106,11 +107,12 @@ public class PeripheralActivity extends Activity {
 					description = "" + errorCode;
 				}
 
-				showToastAsync(activity, "start failed : "+description);
+				showToastAsync(activity, "starting failed : "+description);
 			};
 		};
 		
-		mAdvertiser.startAdvertising(settings, advertiseData, advertiseCallback);
+		showToastAsync(activity, "starting advertising");
+		mAdvertiser.startAdvertising(settings, advertiseData, mAdvertiseCallback);
 
 		findViewById(R.id.button_send_00).setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -175,7 +177,6 @@ public class PeripheralActivity extends Activity {
 			}
 		});
 		
-		final PeripheralActivity finalActivity = this;
 		findViewById(R.id.button_stop_advertising).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -183,23 +184,16 @@ public class PeripheralActivity extends Activity {
 		            gattServer.clearServices();
 		            gattServer.close();
 		            gattServer = null;
+		        } else {
+		        	showToastAsync(activity, "gattServer is null");
 		        }
 		        
 		        if (mAdvertiser != null) {
-		        	mAdvertiser.stopAdvertising(new AdvertiseCallback(){
-		        		@Override
-		    			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-		    				super.onStartSuccess(settingsInEffect);
-		    				showToastAsync(finalActivity, "stopped");
-		    			}
-
-		    			@Override
-		    			public void onStartFailure(int errorCode) {
-		    				super.onStartFailure(errorCode);
-		    				showToastAsync(finalActivity, "stop failed : "+errorCode);
-		    			}
-		        	});
+		        	mAdvertiser.stopAdvertising(mAdvertiseCallback);
+		        	showToastAsync(activity, "stopped advertising");
 		        	mAdvertiser = null;
+		        } else {
+		        	showToastAsync(activity, "mAdvertiser is null");
 		        }
 			}
 		});
@@ -209,8 +203,6 @@ public class PeripheralActivity extends Activity {
 	public void onPause(){
 		super.onPause();
 		
-		final PeripheralActivity finalActivity = this;
-		
 		if (gattServer != null) {
             gattServer.clearServices();
             gattServer.close();
@@ -218,19 +210,7 @@ public class PeripheralActivity extends Activity {
         }
 		
         if (mAdvertiser != null) {
-        	mAdvertiser.stopAdvertising(new AdvertiseCallback(){
-        		@Override
-    			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-    				super.onStartSuccess(settingsInEffect);
-    				showToastAsync(finalActivity, "stopped");
-    			}
-
-    			@Override
-    			public void onStartFailure(int errorCode) {
-    				super.onStartFailure(errorCode);
-    				showToastAsync(finalActivity, "stop failed : "+errorCode);
-    			}
-        	});
+        	mAdvertiser.stopAdvertising(mAdvertiseCallback);
         	mAdvertiser = null;
         }
 	}
