@@ -342,11 +342,7 @@ public class CentralActivity extends Activity {
 						}
 
 						finalActivity.setUuidTextAsync(finalActivity, mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
-					} else {
-						gatt.disconnect();
 					}
-				} else {
-					gatt.disconnect();
 				}
 			}
 		}
