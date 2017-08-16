@@ -68,7 +68,7 @@ public class PeripheralActivity extends Activity {
 		mAdvertiser = adapter.getBluetoothLeAdvertiser();
 		if (mAdvertiser == null) {
 			MainActivity parent = (MainActivity)this.getParent();
-			Toast.makeText(parent, "mAdvertiser is null", Toast.LENGTH_SHORT);
+			Toast.makeText(parent, "mAdvertiser is null", Toast.LENGTH_SHORT).show();
 			finish();
 			return;
 		}
