@@ -22,6 +22,7 @@ import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.UUID;
 
@@ -66,7 +67,8 @@ public class PeripheralActivity extends Activity {
 		
 		mAdvertiser = adapter.getBluetoothLeAdvertiser();
 		if (mAdvertiser == null) {
-			showToastAsync(this, "mAdvertiser is null");
+			MainActivity parent = (MainActivity)this.getParent();
+			Toast.makeText(parent, "mAdvertiser is null", Toast.LENGTH_SHORT);
 			finish();
 			return;
 		}
