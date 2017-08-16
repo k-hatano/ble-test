@@ -63,12 +63,14 @@ public class CentralActivity extends Activity {
 			startActivity(enableBtIntent);
 			return;
 		}
+		
+		final CentralActivity activity = this;
+		String macAddress = android.provider.Settings.Secure.getString(activity.getContentResolver(), "bluetooth_address");
+		showToastAsync(finalActivity, "self : " + macAddress);
 
 		foundDevices = new HashMap<String, BluetoothDevice>();
 		this.scanPairedDevices();
 		this.scanNewDevice();
-
-		final CentralActivity activity = this;
 
 		findViewById(R.id.button_re_scan).setOnClickListener(new View.OnClickListener() {
 			@Override

@@ -50,6 +50,10 @@ public class PeripheralActivity extends Activity {
 			return;
 		}
 		
+		final PeripheralActivity activity = this;
+		String macAddress = android.provider.Settings.Secure.getString(activity.getContentResolver(), "bluetooth_address");
+		showToastAsync(activity, "self : " + macAddress);
+		
 		if (!adapter.isMultipleAdvertisementSupported()) {
 			showToastAsync(this, "multi advertisement not supported");
 		}
@@ -80,7 +84,6 @@ public class PeripheralActivity extends Activity {
 		AdvertiseData advertiseData = dataBuilder.build();
 
 		gattServer = setGattServer();
-		final PeripheralActivity activity = this;
 		mAdvertiseCallback = new AdvertiseCallback() {
 			@Override
 			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
