@@ -36,39 +36,40 @@ public class PeripheralActivity extends Activity {
 
 	Handler guiThreadHandler = new Handler();
 
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_peripheral);
 
-		BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-		BluetoothAdapter adapter = manager.getAdapter();
-		
-		if ((adapter == null) || (!adapter.isEnabled())) {
+		BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+		BluetoothAdapter mBluetoothAdapter = bluetoothManager.getAdapter();
+
+		if ((mBluetoothAdapter == null) || (!mBluetoothAdapter.isEnabled())) {
+			this.setResult(MainActivity.RESULT_MBLUETOOTHADAPTER_IS_NULL);
 			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			startActivity(enableBtIntent);
+			finish();
 			return;
 		}
-		
+
 		final PeripheralActivity activity = this;
-		String macAddress = android.provider.Settings.Secure.getString(activity.getContentResolver(), "bluetooth_address");
+		String macAddress = android.provider.Settings.Secure.getString(activity.getContentResolver(),
+				"bluetooth_address");
 		showToastAsync(activity, "self : " + macAddress);
-		
-		if (!adapter.isMultipleAdvertisementSupported()) {
+
+		if (!mBluetoothAdapter.isMultipleAdvertisementSupported()) {
 			showToastAsync(this, "multi advertisement not supported");
 		}
-		if (!adapter.isOffloadedFilteringSupported()) {
+		if (!mBluetoothAdapter.isOffloadedFilteringSupported()) {
 			showToastAsync(this, "offload filtering not supported");
 		}
-		if (!adapter.isOffloadedScanBatchingSupported()) {
+		if (!mBluetoothAdapter.isOffloadedScanBatchingSupported()) {
 			showToastAsync(this, "offloaded scan batching not supported");
 		}
-		
-		mAdvertiser = adapter.getBluetoothLeAdvertiser();
+
+		mAdvertiser = mBluetoothAdapter.getBluetoothLeAdvertiser();
 		if (mAdvertiser == null) {
-			MainActivity parent = (MainActivity)this.getParent();
-			Toast.makeText(parent, "mAdvertiser is null", Toast.LENGTH_SHORT).show();
+			this.setResult(MainActivity.RESULT_MADVERTISER_IS_NULL);
 			finish();
 			return;
 		}
@@ -96,7 +97,7 @@ public class PeripheralActivity extends Activity {
 			@Override
 			public void onStartFailure(int errorCode) {
 				super.onStartFailure(errorCode);
-				
+
 				String description = "";
 				if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_FEATURE_UNSUPPORTED) {
 					description = "ADVERTISE_FAILED_FEATURE_UNSUPPORTED";
@@ -112,10 +113,10 @@ public class PeripheralActivity extends Activity {
 					description = "" + errorCode;
 				}
 
-				showToastAsync(activity, "starting failed : "+description);
+				showToastAsync(activity, "starting failed : " + description);
 			};
 		};
-		
+
 		showToastAsync(activity, "starting advertising");
 		mAdvertiser.startAdvertising(settings, advertiseData, mAdvertiseCallback);
 
@@ -134,12 +135,12 @@ public class PeripheralActivity extends Activity {
 					showToastAsync(activity, "mCharacteristic is null");
 					return;
 				}
-				byte[] bytes = {00};
+				byte[] bytes = { 00 };
 				mCharacteristic.setValue(bytes);
 				gattServer.notifyCharacteristicChanged(mDevice, mCharacteristic, false);
 			}
 		});
-		
+
 		findViewById(R.id.button_send_01).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -155,12 +156,12 @@ public class PeripheralActivity extends Activity {
 					showToastAsync(activity, "mCharacteristic is null");
 					return;
 				}
-				byte[] bytes = {01};
+				byte[] bytes = { 01 };
 				mCharacteristic.setValue(bytes);
 				gattServer.notifyCharacteristicChanged(mDevice, mCharacteristic, false);
 			}
 		});
-		
+
 		findViewById(R.id.button_send_abc).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -176,73 +177,73 @@ public class PeripheralActivity extends Activity {
 					showToastAsync(activity, "mCharacteristic is null");
 					return;
 				}
-				byte[] bytes = {'a', 'b', 'c', 0};
+				byte[] bytes = { 'a', 'b', 'c', 0 };
 				mCharacteristic.setValue(bytes);
 				gattServer.notifyCharacteristicChanged(mDevice, mCharacteristic, false);
 			}
 		});
-		
+
 		findViewById(R.id.button_stop_advertising).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-		        if (gattServer != null) {
-		            gattServer.clearServices();
-		            gattServer.close();
-		            gattServer = null;
-		        } else {
-		        	showToastAsync(activity, "gattServer is null");
-		        }
-		        
-		        if (mAdvertiser != null) {
-		        	mAdvertiser.stopAdvertising(mAdvertiseCallback);
-		        	showToastAsync(activity, "stopped advertising");
-		        	mAdvertiser = null;
-		        } else {
-		        	showToastAsync(activity, "mAdvertiser is null");
-		        }
+				if (gattServer != null) {
+					gattServer.clearServices();
+					gattServer.close();
+					gattServer = null;
+				} else {
+					showToastAsync(activity, "gattServer is null");
+				}
+
+				if (mAdvertiser != null) {
+					mAdvertiser.stopAdvertising(mAdvertiseCallback);
+					showToastAsync(activity, "stopped advertising");
+					mAdvertiser = null;
+				} else {
+					showToastAsync(activity, "mAdvertiser is null");
+				}
 			}
 		});
 	}
-	
+
 	@Override
-	public void onPause(){
+	public void onPause() {
 		super.onPause();
-		
+
 		if (gattServer != null) {
-            gattServer.clearServices();
-            gattServer.close();
-            gattServer = null;
-        }
-		
-        if (mAdvertiser != null) {
-        	mAdvertiser.stopAdvertising(mAdvertiseCallback);
-        	mAdvertiser = null;
-        }
+			gattServer.clearServices();
+			gattServer.close();
+			gattServer = null;
+		}
+
+		if (mAdvertiser != null) {
+			mAdvertiser.stopAdvertising(mAdvertiseCallback);
+			mAdvertiser = null;
+		}
 	}
-	
+
 	@Override
 	protected void onDestroy() {
 		if (gattServer != null) {
-            gattServer.clearServices();
-            gattServer.close();
-            gattServer = null;
-        }
-		
-        if (mAdvertiser != null) {
-        	mAdvertiser.stopAdvertising(new AdvertiseCallback(){
-        		@Override
-    			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-    				super.onStartSuccess(settingsInEffect);
-    			}
+			gattServer.clearServices();
+			gattServer.close();
+			gattServer = null;
+		}
 
-    			@Override
-    			public void onStartFailure(int errorCode) {
-    				super.onStartFailure(errorCode);
-    			}
-        	});
-        	mAdvertiser = null;
-        }
-		
+		if (mAdvertiser != null) {
+			mAdvertiser.stopAdvertising(new AdvertiseCallback() {
+				@Override
+				public void onStartSuccess(AdvertiseSettings settingsInEffect) {
+					super.onStartSuccess(settingsInEffect);
+				}
+
+				@Override
+				public void onStartFailure(int errorCode) {
+					super.onStartFailure(errorCode);
+				}
+			});
+			mAdvertiser = null;
+		}
+
 		super.onDestroy();
 	}
 
@@ -277,7 +278,7 @@ public class PeripheralActivity extends Activity {
 			public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
 				super.onConnectionStateChange(device, status, newState);
 				if (newState == BluetoothProfile.STATE_CONNECTED) {
-					showToastAsync(finalActivity ,"connected : " + device.getAddress() + " / " + device.getName());
+					showToastAsync(finalActivity, "connected : " + device.getAddress() + " / " + device.getName());
 					finalActivity.setUuidTextAsync(finalActivity, device.getAddress() + " / " + device.getName());
 					mDevice = device;
 				} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -287,7 +288,7 @@ public class PeripheralActivity extends Activity {
 				}
 			}
 		});
-		
+
 		if (gatt == null) {
 			showToastAsync(finalActivity, "making gattServer failed");
 			return null;
@@ -301,11 +302,11 @@ public class PeripheralActivity extends Activity {
 				BluetoothGattCharacteristic.PERMISSION_READ | BluetoothGattCharacteristic.PERMISSION_WRITE);
 		service.addCharacteristic(mCharacteristic);
 		gatt.addService(service);
-		
+
 		return gatt;
 	}
 
-	public void showToastAsync(final PeripheralActivity activity ,final String text) {
+	public void showToastAsync(final PeripheralActivity activity, final String text) {
 		guiThreadHandler.post(new Runnable() {
 			@Override
 			public void run() {
@@ -317,8 +318,8 @@ public class PeripheralActivity extends Activity {
 			}
 		});
 	}
-	
-	public void setUuidTextAsync(final PeripheralActivity activity ,final String text) {
+
+	public void setUuidTextAsync(final PeripheralActivity activity, final String text) {
 		guiThreadHandler.post(new Runnable() {
 			@Override
 			public void run() {

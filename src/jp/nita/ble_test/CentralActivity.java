@@ -30,6 +30,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class CentralActivity extends Activity {
 
@@ -38,7 +39,7 @@ public class CentralActivity extends Activity {
 	private BluetoothGatt mBleGatt;
 	private boolean mIsBluetoothEnable = false;
 	private BluetoothGattCharacteristic mBleCharacteristic;
-	
+
 	private HashMap<String, BluetoothDevice> foundDevices = new HashMap<String, BluetoothDevice>();
 
 	Handler guiThreadHandler = new Handler();
@@ -56,16 +57,20 @@ public class CentralActivity extends Activity {
 		BluetoothManager bluetoothManager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
 
 		mBluetoothAdapter = bluetoothManager.getAdapter();
-		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
 
 		if ((mBluetoothAdapter == null) || (!mBluetoothAdapter.isEnabled())) {
+			this.setResult(MainActivity.RESULT_MBLUETOOTHADAPTER_IS_NULL);
 			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			startActivity(enableBtIntent);
+			finish();
 			return;
 		}
-		
+
+		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+
 		final CentralActivity activity = this;
-		String macAddress = android.provider.Settings.Secure.getString(activity.getContentResolver(), "bluetooth_address");
+		String macAddress = android.provider.Settings.Secure.getString(activity.getContentResolver(),
+				"bluetooth_address");
 		showToastAsync(finalActivity, "self : " + macAddress);
 
 		foundDevices = new HashMap<String, BluetoothDevice>();
@@ -79,7 +84,7 @@ public class CentralActivity extends Activity {
 				CentralActivity.this.scanNewDevice();
 			}
 		});
-		
+
 		findViewById(R.id.button_connect_to_a_found_device).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -93,17 +98,18 @@ public class CentralActivity extends Activity {
 						i++;
 					}
 					new AlertDialog.Builder(finalActivity).setTitle("Select device")
-					.setItems(list, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface arg0, int arg1) {
-							showToastAsync(finalActivity, "connecting to " + list[arg1]);
-							foundDevices.get(list[arg1]).connectGatt(getApplicationContext(), true, mGattCallback);
-						}
-					}).show();
+							.setItems(list, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface arg0, int arg1) {
+									showToastAsync(finalActivity, "connecting to " + list[arg1]);
+									foundDevices.get(list[arg1]).connectGatt(getApplicationContext(), true,
+											mGattCallback);
+								}
+							}).show();
 				}
 			}
 		});
-		
+
 		findViewById(R.id.button_disconnect).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -111,7 +117,7 @@ public class CentralActivity extends Activity {
 					showToastAsync(activity, "mBleGatt is null");
 					return;
 				}
-				
+
 				mBleGatt.disconnect();
 			}
 		});
@@ -151,7 +157,7 @@ public class CentralActivity extends Activity {
 				mBleGatt.writeCharacteristic(mBleCharacteristic);
 			}
 		});
-		
+
 		findViewById(R.id.button_send_02_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -169,7 +175,7 @@ public class CentralActivity extends Activity {
 				mBleGatt.writeCharacteristic(mBleCharacteristic);
 			}
 		});
-		
+
 		findViewById(R.id.button_send_03_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -187,7 +193,7 @@ public class CentralActivity extends Activity {
 				mBleGatt.writeCharacteristic(mBleCharacteristic);
 			}
 		});
-		
+
 		findViewById(R.id.button_send_04_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -224,7 +230,7 @@ public class CentralActivity extends Activity {
 			}
 		});
 	}
-	
+
 	private void scanPairedDevices() {
 		showToastAsync(finalActivity, "trying to connect to paired devices");
 		BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -264,7 +270,8 @@ public class CentralActivity extends Activity {
 			@Override
 			public void onScanResult(int callbackType, ScanResult result) {
 				super.onScanResult(callbackType, result);
-				showToastAsync(finalActivity, "connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
+				showToastAsync(finalActivity,
+						"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
 				result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
 			}
 
@@ -292,7 +299,8 @@ public class CentralActivity extends Activity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					showToastAsync(finalActivity, "connecting to scanned " + device.getAddress() + " / " + device.getName());
+					showToastAsync(finalActivity,
+							"connecting to scanned " + device.getAddress() + " / " + device.getName());
 					BluetoothGatt gatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
 				}
 			});
@@ -303,12 +311,14 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			if (newState == BluetoothProfile.STATE_CONNECTED) {
-				showToastAsync(finalActivity, "connected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
+				showToastAsync(finalActivity,
+						"connected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
 				if (gatt.getServices().size() == 0) {
 					gatt.discoverServices();
 				}
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-				showToastAsync(finalActivity, "disconnected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
+				showToastAsync(finalActivity,
+						"disconnected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
 				if (mBleGatt.getDevice().getAddress().equals(gatt.getDevice().getAddress())) {
 					mBleGatt = null;
 					mIsBluetoothEnable = false;
@@ -337,13 +347,15 @@ public class CentralActivity extends Activity {
 						descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 						mBleGatt.writeDescriptor(descriptor);
 						mIsBluetoothEnable = true;
-						showToastAsync(finalActivity, "char matches : "  + mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
-						
+						showToastAsync(finalActivity, "char matches : " + mBleGatt.getDevice().getAddress() + " / "
+								+ mBleGatt.getDevice().getName());
+
 						if (!finalActivity.foundDevices.containsKey(mBleGatt.getDevice().getAddress())) {
 							finalActivity.foundDevices.put(mBleGatt.getDevice().getAddress(), mBleGatt.getDevice());
 						}
 
-						finalActivity.setUuidTextAsync(finalActivity, mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
+						finalActivity.setUuidTextAsync(finalActivity,
+								mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
 					}
 				}
 			}
@@ -355,7 +367,7 @@ public class CentralActivity extends Activity {
 				mStrReceivedNum = characteristic.getStringValue(0);
 				showToastAsync(finalActivity, "char changed : " + mStrReceivedNum);
 				mBleHandler.sendEmptyMessage(MESSAGE_NEW_RECEIVEDNUM);
-			}		
+			}
 		}
 	};
 
