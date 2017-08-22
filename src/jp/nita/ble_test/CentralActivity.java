@@ -315,6 +315,8 @@ public class CentralActivity extends Activity {
 						"connected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
 				if (gatt.getServices().size() == 0) {
 					gatt.discoverServices();
+				} else {
+					handleServices(gatt);
 				}
 			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 				showToastAsync(finalActivity,
@@ -331,32 +333,36 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onServicesDiscovered(BluetoothGatt gatt, int status) {
 			if (status == BluetoothGatt.GATT_SUCCESS) {
-				BluetoothGattService service = gatt.getService(UUID.fromString(MainActivity.SERVICE_UUID));
-				if (service != null) {
-					showToastAsync(finalActivity, "found service : " + service.getUuid().toString());
-					mBleCharacteristic = service.getCharacteristic(UUID.fromString(MainActivity.CHAR_UUID));
+				handleServices(gatt);
+			}
+		}
+		
+		public void handleServices(BluetoothGatt gatt){
+			BluetoothGattService service = gatt.getService(UUID.fromString(MainActivity.SERVICE_UUID));
+			if (service != null) {
+				showToastAsync(finalActivity, "found service : " + service.getUuid().toString());
+				mBleCharacteristic = service.getCharacteristic(UUID.fromString(MainActivity.CHAR_UUID));
 
-					if (mBleCharacteristic != null) {
-						showToastAsync(finalActivity, "found char : " + mBleCharacteristic.getUuid().toString());
-						mBleGatt = gatt;
-						// TODO: スキャンしているだけの時はいきなりgattに登録しない
+				if (mBleCharacteristic != null) {
+					showToastAsync(finalActivity, "found char : " + mBleCharacteristic.getUuid().toString());
+					mBleGatt = gatt;
+					// TODO: スキャンしているだけの時はいきなりgattに登録しない
 
-						BluetoothGattDescriptor descriptor = mBleCharacteristic
-								.getDescriptor(UUID.fromString(MainActivity.CHAR_CONFIG_UUID));
+					BluetoothGattDescriptor descriptor = mBleCharacteristic
+							.getDescriptor(UUID.fromString(MainActivity.CHAR_CONFIG_UUID));
 
-						descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-						mBleGatt.writeDescriptor(descriptor);
-						mIsBluetoothEnable = true;
-						showToastAsync(finalActivity, "char matches : " + mBleGatt.getDevice().getAddress() + " / "
-								+ mBleGatt.getDevice().getName());
+					descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+					mBleGatt.writeDescriptor(descriptor);
+					mIsBluetoothEnable = true;
+					showToastAsync(finalActivity, "char matches : " + mBleGatt.getDevice().getAddress() + " / "
+							+ mBleGatt.getDevice().getName());
 
-						if (!finalActivity.foundDevices.containsKey(mBleGatt.getDevice().getAddress())) {
-							finalActivity.foundDevices.put(mBleGatt.getDevice().getAddress(), mBleGatt.getDevice());
-						}
-
-						finalActivity.setUuidTextAsync(finalActivity,
-								mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
+					if (!finalActivity.foundDevices.containsKey(mBleGatt.getDevice().getAddress())) {
+						finalActivity.foundDevices.put(mBleGatt.getDevice().getAddress(), mBleGatt.getDevice());
 					}
+
+					finalActivity.setUuidTextAsync(finalActivity,
+							mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
 				}
 			}
 		}
