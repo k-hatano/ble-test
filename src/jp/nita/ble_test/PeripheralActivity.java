@@ -45,7 +45,7 @@ public class PeripheralActivity extends Activity {
 		BluetoothAdapter mBluetoothAdapter = bluetoothManager.getAdapter();
 
 		if ((mBluetoothAdapter == null) || (!mBluetoothAdapter.isEnabled())) {
-			this.setResult(MainActivity.RESULT_MBLUETOOTHADAPTER_IS_NULL);
+			this.setResult(MainActivity.RESULT_MADAPTER_IS_NULL);
 			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			startActivity(enableBtIntent);
 			finish();
@@ -120,6 +120,10 @@ public class PeripheralActivity extends Activity {
 		showToastAsync(activity, "starting advertising");
 		mAdvertiser.startAdvertising(settings, advertiseData, mAdvertiseCallback);
 
+		this.setListeners(this);
+	}
+	
+	private void setListeners(final PeripheralActivity activity) {
 		findViewById(R.id.button_send_00).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

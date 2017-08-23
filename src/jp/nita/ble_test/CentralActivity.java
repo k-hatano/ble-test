@@ -30,15 +30,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class CentralActivity extends Activity {
 
-	BluetoothAdapter mBluetoothAdapter;
-	BluetoothLeScanner mBluetoothLeScanner;
+	BluetoothAdapter mAdapter;
+	BluetoothLeScanner mScanner;
 	private BluetoothGatt mBleGatt;
 	private boolean mIsBluetoothEnable = false;
-	private BluetoothGattCharacteristic mBleCharacteristic;
+	private BluetoothGattCharacteristic mCharacteristic;
 
 	private HashMap<String, BluetoothDevice> foundDevices = new HashMap<String, BluetoothDevice>();
 
@@ -54,19 +53,19 @@ public class CentralActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_central);
 
-		BluetoothManager bluetoothManager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
+		BluetoothManager manager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
 
-		mBluetoothAdapter = bluetoothManager.getAdapter();
+		mAdapter = manager.getAdapter();
 
-		if ((mBluetoothAdapter == null) || (!mBluetoothAdapter.isEnabled())) {
-			this.setResult(MainActivity.RESULT_MBLUETOOTHADAPTER_IS_NULL);
+		if ((mAdapter == null) || (!mAdapter.isEnabled())) {
+			this.setResult(MainActivity.RESULT_MADAPTER_IS_NULL);
 			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			startActivity(enableBtIntent);
 			finish();
 			return;
 		}
 
-		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+		mScanner = mAdapter.getBluetoothLeScanner();
 
 		final CentralActivity activity = this;
 		String macAddress = android.provider.Settings.Secure.getString(activity.getContentResolver(),
@@ -77,6 +76,10 @@ public class CentralActivity extends Activity {
 		this.scanPairedDevices();
 		this.scanNewDevice();
 
+		this.setListeners(this);
+	}
+	
+	private void setListeners(final CentralActivity activity){
 		findViewById(R.id.button_re_scan).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -135,8 +138,8 @@ public class CentralActivity extends Activity {
 				}
 
 				byte[] bytes = { 00 };
-				mBleCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mBleCharacteristic);
+				mCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mCharacteristic);
 			}
 		});
 
@@ -153,8 +156,8 @@ public class CentralActivity extends Activity {
 				}
 
 				byte[] bytes = { 01 };
-				mBleCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mBleCharacteristic);
+				mCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mCharacteristic);
 			}
 		});
 
@@ -171,8 +174,8 @@ public class CentralActivity extends Activity {
 				}
 
 				byte[] bytes = { 02 };
-				mBleCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mBleCharacteristic);
+				mCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mCharacteristic);
 			}
 		});
 
@@ -189,8 +192,8 @@ public class CentralActivity extends Activity {
 				}
 
 				byte[] bytes = { 03 };
-				mBleCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mBleCharacteristic);
+				mCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mCharacteristic);
 			}
 		});
 
@@ -207,8 +210,8 @@ public class CentralActivity extends Activity {
 				}
 
 				byte[] bytes = { 04 };
-				mBleCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mBleCharacteristic);
+				mCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mCharacteristic);
 			}
 		});
 
@@ -225,8 +228,8 @@ public class CentralActivity extends Activity {
 				}
 
 				byte[] bytes = { 'A', 'B', 'C', 0 };
-				mBleCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mBleCharacteristic);
+				mCharacteristic.setValue(bytes);
+				mBleGatt.writeCharacteristic(mCharacteristic);
 			}
 		});
 	}
@@ -256,16 +259,16 @@ public class CentralActivity extends Activity {
 			guiThreadHandler.postDelayed(new Runnable() {
 				@Override
 				public void run() {
-					mBluetoothAdapter.stopLeScan(mScanCallback);
+					mAdapter.stopLeScan(mScanCallback);
 				}
 			}, 10000);
 
-			mBluetoothAdapter.startLeScan(mScanCallback);
+			mAdapter.startLeScan(mScanCallback);
 		}
 	}
 
 	private void startScanByBleScanner() {
-		mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+		mScanner = mAdapter.getBluetoothLeScanner();
 		final ScanCallback scanCallback = new ScanCallback() {
 			@Override
 			public void onScanResult(int callbackType, ScanResult result) {
@@ -284,12 +287,12 @@ public class CentralActivity extends Activity {
 		guiThreadHandler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
-				mBluetoothLeScanner.stopScan(scanCallback);
+				mScanner.stopScan(scanCallback);
 				showToastAsync(finalActivity, "scanning stopped");
 			}
 		}, 10000);
 
-		mBluetoothLeScanner.startScan(scanCallback);
+		mScanner.startScan(scanCallback);
 		showToastAsync(finalActivity, "scanning started");
 	}
 
@@ -341,14 +344,14 @@ public class CentralActivity extends Activity {
 			BluetoothGattService service = gatt.getService(UUID.fromString(MainActivity.SERVICE_UUID));
 			if (service != null) {
 				showToastAsync(finalActivity, "found service : " + service.getUuid().toString());
-				mBleCharacteristic = service.getCharacteristic(UUID.fromString(MainActivity.CHAR_UUID));
+				mCharacteristic = service.getCharacteristic(UUID.fromString(MainActivity.CHAR_UUID));
 
-				if (mBleCharacteristic != null) {
-					showToastAsync(finalActivity, "found char : " + mBleCharacteristic.getUuid().toString());
+				if (mCharacteristic != null) {
+					showToastAsync(finalActivity, "found char : " + mCharacteristic.getUuid().toString());
 					mBleGatt = gatt;
 					// TODO: スキャンしているだけの時はいきなりgattに登録しない
 
-					BluetoothGattDescriptor descriptor = mBleCharacteristic
+					BluetoothGattDescriptor descriptor = mCharacteristic
 							.getDescriptor(UUID.fromString(MainActivity.CHAR_CONFIG_UUID));
 
 					descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);

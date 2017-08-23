@@ -19,7 +19,7 @@ public class MainActivity extends Activity {
 	public static final int REQUEST_CENTRAL = 1;
 	public static final int REQUEST_PERIPHERAL = 2;
 	public static final int RESULT_OK = 0;
-	public static final int RESULT_MBLUETOOTHADAPTER_IS_NULL = 1;
+	public static final int RESULT_MADAPTER_IS_NULL = 1;
 	public static final int RESULT_MADVERTISER_IS_NULL = 2;
 
 	@Override
@@ -64,22 +64,22 @@ public class MainActivity extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
 		case REQUEST_CENTRAL:
-			if (resultCode == RESULT_MBLUETOOTHADAPTER_IS_NULL) {
-				Toast.makeText(this, "mBluetoothAdapter is null", Toast.LENGTH_SHORT).show();
+			if (resultCode == RESULT_MADAPTER_IS_NULL) {
+				Toast.makeText(this, "mAdapter is null", Toast.LENGTH_SHORT).show();
 				break;
 			}
 			if (resultCode == RESULT_MADVERTISER_IS_NULL) {
-				Toast.makeText(this, "mBluetoothAdapter is null", Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, "mAdvertiser is null", Toast.LENGTH_SHORT).show();
 				break;
 			}
 			break;
 		case REQUEST_PERIPHERAL:
-			if (resultCode == RESULT_MBLUETOOTHADAPTER_IS_NULL) {
-				Toast.makeText(this, "mBluetoothAdapter is null", Toast.LENGTH_SHORT).show();
+			if (resultCode == RESULT_MADAPTER_IS_NULL) {
+				Toast.makeText(this, "mAdapter is null", Toast.LENGTH_SHORT).show();
 				break;
 			}
 			if (resultCode == RESULT_MADVERTISER_IS_NULL) {
-				Toast.makeText(this, "mBluetoothAdapter is null", Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, "mAdvertiser is null", Toast.LENGTH_SHORT).show();
 				break;
 			}
 			break;
