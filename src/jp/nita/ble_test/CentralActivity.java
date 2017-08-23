@@ -33,6 +33,7 @@ import android.widget.TextView;
 
 public class CentralActivity extends Activity {
 
+	BluetoothManager mManager;
 	BluetoothAdapter mAdapter;
 	BluetoothLeScanner mScanner;
 	private BluetoothGatt mBleGatt;
@@ -47,15 +48,22 @@ public class CentralActivity extends Activity {
 
 	private final static int MESSAGE_NEW_RECEIVEDNUM = 0;
 	private final static int MESSAGE_NEW_SENDNUM = 1;
+	
+	final static int STATE_NONE = 0;
+	final static int STATE_SCANNING = 1;
+	final static int STATE_PAIRED = 2;
+	int state = STATE_NONE;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_central);
+		
+		state = STATE_NONE;
 
-		BluetoothManager manager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
+		mManager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
 
-		mAdapter = manager.getAdapter();
+		mAdapter = mManager.getAdapter();
 
 		if ((mAdapter == null) || (!mAdapter.isEnabled())) {
 			this.setResult(MainActivity.RESULT_MADAPTER_IS_NULL);
@@ -104,6 +112,7 @@ public class CentralActivity extends Activity {
 							.setItems(list, new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface arg0, int arg1) {
+									CentralActivity.this.state = CentralActivity.STATE_PAIRED;
 									showToastAsync(finalActivity, "connecting to " + list[arg1]);
 									foundDevices.get(list[arg1]).connectGatt(getApplicationContext(), true,
 											mGattCallback);
@@ -240,9 +249,11 @@ public class CentralActivity extends Activity {
 		Set<BluetoothDevice> btDevices = btAdapter.getBondedDevices();
 		for (BluetoothDevice device : btDevices) {
 			int type = device.getType();
-			if (type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL) {
+			if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL)
+					&& mManager.getConnectionState(device,
+							BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
 				showToastAsync(finalActivity, "connecting : " + device.getAddress() + " / " + device.getName());
-				device.connectGatt(getApplicationContext(), false, mGattCallback);
+				device.connectGatt(getApplicationContext(), true, mGattCallback);
 			}
 			try {
 				Thread.sleep(10);
@@ -259,11 +270,15 @@ public class CentralActivity extends Activity {
 			guiThreadHandler.postDelayed(new Runnable() {
 				@Override
 				public void run() {
+					state = STATE_NONE;
 					mAdapter.stopLeScan(mScanCallback);
+					showToastAsync(finalActivity, "scanning stopped");
 				}
 			}, 10000);
 
+			state = STATE_SCANNING;
 			mAdapter.startLeScan(mScanCallback);
+			showToastAsync(finalActivity, "scanning started");
 		}
 	}
 
@@ -273,9 +288,17 @@ public class CentralActivity extends Activity {
 			@Override
 			public void onScanResult(int callbackType, ScanResult result) {
 				super.onScanResult(callbackType, result);
-				showToastAsync(finalActivity,
-						"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
-				result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
+				if (result.getDevice() == null) {
+					return;
+				}
+				int type = result.getDevice().getType();
+				if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL)
+						&& mManager.getConnectionState(result.getDevice(),
+								BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
+					showToastAsync(finalActivity,
+							"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
+					result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
+				}
 			}
 
 			@Override
@@ -287,11 +310,13 @@ public class CentralActivity extends Activity {
 		guiThreadHandler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
+				state = STATE_NONE;
 				mScanner.stopScan(scanCallback);
 				showToastAsync(finalActivity, "scanning stopped");
 			}
 		}, 10000);
 
+		state = STATE_SCANNING;
 		mScanner.startScan(scanCallback);
 		showToastAsync(finalActivity, "scanning started");
 	}
@@ -302,9 +327,13 @@ public class CentralActivity extends Activity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					showToastAsync(finalActivity,
-							"connecting to scanned " + device.getAddress() + " / " + device.getName());
-					BluetoothGatt gatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
+					int type = device.getType();
+					if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL)
+							&& mManager.getConnectionState(device,
+									BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
+						showToastAsync(finalActivity, "connecting : " + device.getAddress() + " / " + device.getName());
+						BluetoothGatt gatt = device.connectGatt(getApplicationContext(), true, mGattCallback);
+					}
 				}
 			});
 		}
@@ -317,6 +346,8 @@ public class CentralActivity extends Activity {
 				showToastAsync(finalActivity,
 						"connected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
 				if (gatt.getServices().size() == 0) {
+					showToastAsync(finalActivity,
+							"discovering services : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
 					gatt.discoverServices();
 				} else {
 					handleServices(gatt);
@@ -348,24 +379,30 @@ public class CentralActivity extends Activity {
 
 				if (mCharacteristic != null) {
 					showToastAsync(finalActivity, "found char : " + mCharacteristic.getUuid().toString());
-					mBleGatt = gatt;
-					// TODO: スキャンしているだけの時はいきなりgattに登録しない
+					
+					if (CentralActivity.this.state == CentralActivity.STATE_SCANNING) {
+						showToastAsync(finalActivity, "added device : " + mBleGatt.getDevice().getAddress() + " / "
+								+ mBleGatt.getDevice().getName());
+						if (!finalActivity.foundDevices.containsKey(mBleGatt.getDevice().getAddress())) {
+							finalActivity.foundDevices.put(mBleGatt.getDevice().getAddress(), mBleGatt.getDevice());
+						}
 
-					BluetoothGattDescriptor descriptor = mCharacteristic
-							.getDescriptor(UUID.fromString(MainActivity.CHAR_CONFIG_UUID));
+						finalActivity.setUuidTextAsync(finalActivity,
+								mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
+					} else if (CentralActivity.this.state == CentralActivity.STATE_PAIRED) {
+						mBleGatt = gatt;
+						BluetoothGattDescriptor descriptor = mCharacteristic
+								.getDescriptor(UUID.fromString(MainActivity.CHAR_CONFIG_UUID));
 
-					descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-					mBleGatt.writeDescriptor(descriptor);
-					mIsBluetoothEnable = true;
-					showToastAsync(finalActivity, "char matches : " + mBleGatt.getDevice().getAddress() + " / "
-							+ mBleGatt.getDevice().getName());
-
-					if (!finalActivity.foundDevices.containsKey(mBleGatt.getDevice().getAddress())) {
-						finalActivity.foundDevices.put(mBleGatt.getDevice().getAddress(), mBleGatt.getDevice());
+						descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+						mBleGatt.writeDescriptor(descriptor);
+						mIsBluetoothEnable = true;
+						showToastAsync(finalActivity, "paired : " + mBleGatt.getDevice().getAddress() + " / "
+								+ mBleGatt.getDevice().getName());
+						
+						mBleGatt.getDevice().createBond();
+						CentralActivity.this.state = CentralActivity.STATE_NONE;
 					}
-
-					finalActivity.setUuidTextAsync(finalActivity,
-							mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
 				}
 			}
 		}

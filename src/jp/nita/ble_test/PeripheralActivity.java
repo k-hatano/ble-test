@@ -75,10 +75,10 @@ public class PeripheralActivity extends Activity {
 		}
 
 		AdvertiseSettings.Builder settingBuilder = new AdvertiseSettings.Builder();
-		settingBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_POWER);
+		settingBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED);
 		settingBuilder.setConnectable(true);
 		settingBuilder.setTimeout(10000);
-		settingBuilder.setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_LOW);
+		settingBuilder.setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM);
 		AdvertiseSettings settings = settingBuilder.build();
 
 		AdvertiseData.Builder dataBuilder = new AdvertiseData.Builder();
@@ -234,17 +234,7 @@ public class PeripheralActivity extends Activity {
 		}
 
 		if (mAdvertiser != null) {
-			mAdvertiser.stopAdvertising(new AdvertiseCallback() {
-				@Override
-				public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-					super.onStartSuccess(settingsInEffect);
-				}
-
-				@Override
-				public void onStartFailure(int errorCode) {
-					super.onStartFailure(errorCode);
-				}
-			});
+			mAdvertiser.stopAdvertising(mAdvertiseCallback);
 			mAdvertiser = null;
 		}
 
