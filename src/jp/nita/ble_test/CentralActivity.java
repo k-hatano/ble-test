@@ -52,7 +52,7 @@ public class CentralActivity extends Activity {
 	final static int STATE_NONE = 0;
 	final static int STATE_SCANNING = 1;
 	final static int STATE_PAIRED = 2;
-	int state = STATE_NONE;
+	int state;
 
 	static Object bleProcess = new Object();
 
@@ -61,7 +61,7 @@ public class CentralActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_central);
 
-		state = STATE_NONE;
+		this.state = STATE_NONE;
 
 		mManager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
 
@@ -291,10 +291,10 @@ public class CentralActivity extends Activity {
 
 	private void scanNewDevice() {
 		if (Build.VERSION.SDK_INT >= 5.0) {
-			state = STATE_SCANNING;
+			this.state = STATE_SCANNING;
 			this.startScanByBleScanner();
 		} else {
-			state = STATE_SCANNING;
+			this.state = STATE_SCANNING;
 			mAdapter.startLeScan(mScanCallback);
 			showToastAsync(finalActivity, "scanning started");
 		}
@@ -306,18 +306,18 @@ public class CentralActivity extends Activity {
 				showToastAsync(finalActivity, "mScanner is null");
 				return;
 			}
-			state = STATE_NONE;
+			this.state = STATE_NONE;
 			mScanner.stopScan(mLeScanCallback);
 			showToastAsync(finalActivity, "scanning stopped");
 		} else {
-			state = STATE_NONE;
+			this.state = STATE_NONE;
 			mAdapter.stopLeScan(mScanCallback);
 			showToastAsync(finalActivity, "scanning stopped");
 		}
 	}
 
 	private void startScanByBleScanner() {
-		state = STATE_SCANNING;
+		this.state = STATE_SCANNING;
 		synchronized (bleProcess) {
 			mScanner.startScan(mLeScanCallback);
 			showToastAsync(finalActivity, "scanning started");
@@ -427,16 +427,16 @@ public class CentralActivity extends Activity {
 				if (mCharacteristic != null) {
 					showToastAsync(finalActivity, "found char : " + mCharacteristic.getUuid().toString());
 
-					if (CentralActivity.this.state == CentralActivity.STATE_SCANNING) {
-						showToastAsync(finalActivity, "added device : " + mBleGatt.getDevice().getAddress() + " / "
-								+ mBleGatt.getDevice().getName());
-						if (!finalActivity.foundDevices.containsKey(mBleGatt.getDevice().getAddress())) {
-							finalActivity.foundDevices.put(mBleGatt.getDevice().getAddress(), mBleGatt.getDevice());
+					if (finalActivity.state == CentralActivity.STATE_SCANNING) {
+						if (!finalActivity.foundDevices.containsKey(gatt.getDevice().getAddress())) {
+							showToastAsync(finalActivity, "added device : " + gatt.getDevice().getAddress() + " / "
+									+ gatt.getDevice().getName());
+							finalActivity.foundDevices.put(gatt.getDevice().getAddress(), gatt.getDevice());
+						} else {
+							showToastAsync(finalActivity, "device already added : " + gatt.getDevice().getAddress() + " / "
+									+ gatt.getDevice().getName());
 						}
-
-						finalActivity.setUuidTextAsync(finalActivity,
-								mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
-					} else if (CentralActivity.this.state == CentralActivity.STATE_PAIRED) {
+					} else if (finalActivity.state == CentralActivity.STATE_PAIRED) {
 						synchronized (bleProcess) {
 							mBleGatt = gatt;
 							BluetoothGattDescriptor descriptor = mCharacteristic
@@ -450,6 +450,9 @@ public class CentralActivity extends Activity {
 
 							mBleGatt.getDevice().createBond();
 							CentralActivity.this.state = CentralActivity.STATE_NONE;
+							
+							finalActivity.setUuidTextAsync(finalActivity,
+									mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
 						}
 					}
 				}
