@@ -48,17 +48,19 @@ public class CentralActivity extends Activity {
 
 	private final static int MESSAGE_NEW_RECEIVEDNUM = 0;
 	private final static int MESSAGE_NEW_SENDNUM = 1;
-	
+
 	final static int STATE_NONE = 0;
 	final static int STATE_SCANNING = 1;
 	final static int STATE_PAIRED = 2;
 	int state = STATE_NONE;
 
+	static Object bleProcess = new Object();
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_central);
-		
+
 		state = STATE_NONE;
 
 		mManager = (BluetoothManager) (this.getSystemService(Context.BLUETOOTH_SERVICE));
@@ -86,15 +88,15 @@ public class CentralActivity extends Activity {
 
 		this.setListeners(this);
 	}
-	
-	private void setListeners(final CentralActivity activity){
+
+	private void setListeners(final CentralActivity activity) {
 		findViewById(R.id.button_stop_scanning).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				CentralActivity.this.stopScanning();
 			}
 		});
-		
+
 		findViewById(R.id.button_re_scan).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -120,9 +122,11 @@ public class CentralActivity extends Activity {
 								@Override
 								public void onClick(DialogInterface arg0, int arg1) {
 									CentralActivity.this.state = CentralActivity.STATE_PAIRED;
-									showToastAsync(finalActivity, "connecting to " + list[arg1]);
-									foundDevices.get(list[arg1]).connectGatt(getApplicationContext(), true,
-											mGattCallback);
+									synchronized (bleProcess) {
+										showToastAsync(finalActivity, "connecting to " + list[arg1]);
+										foundDevices.get(list[arg1]).connectGatt(getApplicationContext(), true,
+												mGattCallback);
+									}
 								}
 							}).show();
 				}
@@ -132,120 +136,134 @@ public class CentralActivity extends Activity {
 		findViewById(R.id.button_disconnect).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mBleGatt == null) {
-					showToastAsync(activity, "mBleGatt is null");
-					return;
-				}
+				synchronized (bleProcess) {
+					if (mBleGatt == null) {
+						showToastAsync(activity, "mBleGatt is null");
+						return;
+					}
 
-				mBleGatt.disconnect();
+					mBleGatt.disconnect();
+				}
 			}
 		});
 
 		findViewById(R.id.button_send_00_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mBleGatt == null) {
-					showToastAsync(activity, "mBleGatt is null");
-					return;
-				}
-				if (mIsBluetoothEnable == false) {
-					showToastAsync(activity, "mIsBluetoothEnable is false");
-					return;
-				}
+				synchronized (bleProcess) {
+					if (mBleGatt == null) {
+						showToastAsync(activity, "mBleGatt is null");
+						return;
+					}
+					if (mIsBluetoothEnable == false) {
+						showToastAsync(activity, "mIsBluetoothEnable is false");
+						return;
+					}
 
-				byte[] bytes = { 00 };
-				mCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mCharacteristic);
+					byte[] bytes = { 00 };
+					mCharacteristic.setValue(bytes);
+					mBleGatt.writeCharacteristic(mCharacteristic);
+				}
 			}
 		});
 
 		findViewById(R.id.button_send_01_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mBleGatt == null) {
-					showToastAsync(activity, "mBleGatt is null");
-					return;
-				}
-				if (mIsBluetoothEnable == false) {
-					showToastAsync(activity, "mIsBluetoothEnable is false");
-					return;
-				}
+				synchronized (bleProcess) {
+					if (mBleGatt == null) {
+						showToastAsync(activity, "mBleGatt is null");
+						return;
+					}
+					if (mIsBluetoothEnable == false) {
+						showToastAsync(activity, "mIsBluetoothEnable is false");
+						return;
+					}
 
-				byte[] bytes = { 01 };
-				mCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mCharacteristic);
+					byte[] bytes = { 01 };
+					mCharacteristic.setValue(bytes);
+					mBleGatt.writeCharacteristic(mCharacteristic);
+				}
 			}
 		});
 
 		findViewById(R.id.button_send_02_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mBleGatt == null) {
-					showToastAsync(activity, "mBleGatt is null");
-					return;
-				}
-				if (mIsBluetoothEnable == false) {
-					showToastAsync(activity, "mIsBluetoothEnable is false");
-					return;
-				}
+				synchronized (bleProcess) {
+					if (mBleGatt == null) {
+						showToastAsync(activity, "mBleGatt is null");
+						return;
+					}
+					if (mIsBluetoothEnable == false) {
+						showToastAsync(activity, "mIsBluetoothEnable is false");
+						return;
+					}
 
-				byte[] bytes = { 02 };
-				mCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mCharacteristic);
+					byte[] bytes = { 02 };
+					mCharacteristic.setValue(bytes);
+					mBleGatt.writeCharacteristic(mCharacteristic);
+				}
 			}
 		});
 
 		findViewById(R.id.button_send_03_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mBleGatt == null) {
-					showToastAsync(activity, "mBleGatt is null");
-					return;
-				}
-				if (mIsBluetoothEnable == false) {
-					showToastAsync(activity, "mIsBluetoothEnable is false");
-					return;
-				}
+				synchronized (bleProcess) {
+					if (mBleGatt == null) {
+						showToastAsync(activity, "mBleGatt is null");
+						return;
+					}
+					if (mIsBluetoothEnable == false) {
+						showToastAsync(activity, "mIsBluetoothEnable is false");
+						return;
+					}
 
-				byte[] bytes = { 03 };
-				mCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mCharacteristic);
+					byte[] bytes = { 03 };
+					mCharacteristic.setValue(bytes);
+					mBleGatt.writeCharacteristic(mCharacteristic);
+				}
 			}
 		});
 
 		findViewById(R.id.button_send_04_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mBleGatt == null) {
-					showToastAsync(activity, "mBleGatt is null");
-					return;
-				}
-				if (mIsBluetoothEnable == false) {
-					showToastAsync(activity, "mIsBluetoothEnable is false");
-					return;
-				}
+				synchronized (bleProcess) {
+					if (mBleGatt == null) {
+						showToastAsync(activity, "mBleGatt is null");
+						return;
+					}
+					if (mIsBluetoothEnable == false) {
+						showToastAsync(activity, "mIsBluetoothEnable is false");
+						return;
+					}
 
-				byte[] bytes = { 04 };
-				mCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mCharacteristic);
+					byte[] bytes = { 04 };
+					mCharacteristic.setValue(bytes);
+					mBleGatt.writeCharacteristic(mCharacteristic);
+				}
 			}
 		});
 
 		findViewById(R.id.button_send_abc_central).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mBleGatt == null) {
-					showToastAsync(activity, "mBleGatt is null");
-					return;
-				}
-				if (mIsBluetoothEnable == false) {
-					showToastAsync(activity, "mIsBluetoothEnable is false");
-					return;
-				}
+				synchronized (bleProcess) {
+					if (mBleGatt == null) {
+						showToastAsync(activity, "mBleGatt is null");
+						return;
+					}
+					if (mIsBluetoothEnable == false) {
+						showToastAsync(activity, "mIsBluetoothEnable is false");
+						return;
+					}
 
-				byte[] bytes = { 'A', 'B', 'C', 0 };
-				mCharacteristic.setValue(bytes);
-				mBleGatt.writeCharacteristic(mCharacteristic);
+					byte[] bytes = { 'A', 'B', 'C', 0 };
+					mCharacteristic.setValue(bytes);
+					mBleGatt.writeCharacteristic(mCharacteristic);
+				}
 			}
 		});
 	}
@@ -255,17 +273,18 @@ public class CentralActivity extends Activity {
 		BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
 		Set<BluetoothDevice> btDevices = btAdapter.getBondedDevices();
 		for (BluetoothDevice device : btDevices) {
-			int type = device.getType();
-			if ((type != BluetoothDevice.DEVICE_TYPE_CLASSIC)
-					&& mManager.getConnectionState(device,
-							BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
-				showToastAsync(finalActivity, "connecting : " + device.getAddress() + " / " + device.getName());
-				device.connectGatt(getApplicationContext(), true, mGattCallback);
-			}
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			synchronized (bleProcess) {
+				int type = device.getType();
+				if ((type != BluetoothDevice.DEVICE_TYPE_CLASSIC) && mManager.getConnectionState(device,
+						BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
+					showToastAsync(finalActivity, "connecting : " + device.getAddress() + " / " + device.getName());
+					device.connectGatt(getApplicationContext(), true, mGattCallback);
+				}
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -280,7 +299,7 @@ public class CentralActivity extends Activity {
 			showToastAsync(finalActivity, "scanning started");
 		}
 	}
-	
+
 	private void stopScanning() {
 		if (Build.VERSION.SDK_INT >= 5.0) {
 			if (mScanner == null) {
@@ -299,31 +318,34 @@ public class CentralActivity extends Activity {
 
 	private void startScanByBleScanner() {
 		state = STATE_SCANNING;
-		mScanner.startScan(mLeScanCallback);
-		showToastAsync(finalActivity, "scanning started");
+		synchronized (bleProcess) {
+			mScanner.startScan(mLeScanCallback);
+			showToastAsync(finalActivity, "scanning started");
+		}
 	}
-	
+
 	final ScanCallback mLeScanCallback = new ScanCallback() {
 		@Override
 		public void onScanResult(int callbackType, ScanResult result) {
 			super.onScanResult(callbackType, result);
-			if (result.getDevice() == null) {
-				return;
-			}
-			int type = result.getDevice().getType();
-			if ((type != BluetoothDevice.DEVICE_TYPE_CLASSIC)
-					&& mManager.getConnectionState(result.getDevice(),
-							BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
-				showToastAsync(finalActivity,
-						"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
-				result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
+			synchronized (bleProcess) {
+				if (result.getDevice() == null) {
+					return;
+				}
+				int type = result.getDevice().getType();
+				if ((type != BluetoothDevice.DEVICE_TYPE_CLASSIC) && mManager.getConnectionState(result.getDevice(),
+						BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
+					showToastAsync(finalActivity,
+							"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
+					result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
+				}
 			}
 		}
 
 		@Override
 		public void onScanFailed(int intErrorCode) {
 			super.onScanFailed(intErrorCode);
-			
+
 			String description = "";
 			if (intErrorCode == ScanCallback.SCAN_FAILED_ALREADY_STARTED) {
 				description = "SCAN_FAILED_ALREADY_STARTED";
@@ -347,12 +369,15 @@ public class CentralActivity extends Activity {
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					int type = device.getType();
-					if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL)
-							&& mManager.getConnectionState(device,
-									BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
-						showToastAsync(finalActivity, "connecting : " + device.getAddress() + " / " + device.getName());
-						BluetoothGatt gatt = device.connectGatt(getApplicationContext(), true, mGattCallback);
+					synchronized (bleProcess) {
+						int type = device.getType();
+						if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL)
+								&& mManager.getConnectionState(device,
+										BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
+							showToastAsync(finalActivity,
+									"connecting : " + device.getAddress() + " / " + device.getName());
+							BluetoothGatt gatt = device.connectGatt(getApplicationContext(), true, mGattCallback);
+						}
 					}
 				}
 			});
@@ -362,25 +387,27 @@ public class CentralActivity extends Activity {
 	private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
 		@Override
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-			if (newState == BluetoothProfile.STATE_CONNECTED) {
-				showToastAsync(finalActivity,
-						"connected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
-				if (gatt.getServices().size() == 0) {
+			synchronized (bleProcess) {
+				if (newState == BluetoothProfile.STATE_CONNECTED) {
 					showToastAsync(finalActivity,
-							"discovering services : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
-					gatt.discoverServices();
-				} else {
-					handleServices(gatt);
+							"connected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
+					if (gatt.getServices().size() == 0) {
+						showToastAsync(finalActivity, "discovering services : " + gatt.getDevice().getAddress() + " / "
+								+ gatt.getDevice().getName());
+						gatt.discoverServices();
+					} else {
+						handleServices(gatt);
+					}
+				} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+					showToastAsync(finalActivity,
+							"disconnected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
+					if (mBleGatt.getDevice().getAddress().equals(gatt.getDevice().getAddress())) {
+						mBleGatt.close();
+						mBleGatt = null;
+						mIsBluetoothEnable = false;
+						finalActivity.setUuidTextAsync(finalActivity, "");
+					}
 				}
-			} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-				showToastAsync(finalActivity,
-						"disconnected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
-				if (mBleGatt.getDevice().getAddress().equals(gatt.getDevice().getAddress())) {
-					mBleGatt = null;
-					mIsBluetoothEnable = false;
-					finalActivity.setUuidTextAsync(finalActivity, "");
-				}
-				gatt.close();
 			}
 		}
 
@@ -390,8 +417,8 @@ public class CentralActivity extends Activity {
 				handleServices(gatt);
 			}
 		}
-		
-		public void handleServices(BluetoothGatt gatt){
+
+		public void handleServices(BluetoothGatt gatt) {
 			BluetoothGattService service = gatt.getService(UUID.fromString(MainActivity.SERVICE_UUID));
 			if (service != null) {
 				showToastAsync(finalActivity, "found service : " + service.getUuid().toString());
@@ -399,7 +426,7 @@ public class CentralActivity extends Activity {
 
 				if (mCharacteristic != null) {
 					showToastAsync(finalActivity, "found char : " + mCharacteristic.getUuid().toString());
-					
+
 					if (CentralActivity.this.state == CentralActivity.STATE_SCANNING) {
 						showToastAsync(finalActivity, "added device : " + mBleGatt.getDevice().getAddress() + " / "
 								+ mBleGatt.getDevice().getName());
@@ -410,18 +437,20 @@ public class CentralActivity extends Activity {
 						finalActivity.setUuidTextAsync(finalActivity,
 								mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
 					} else if (CentralActivity.this.state == CentralActivity.STATE_PAIRED) {
-						mBleGatt = gatt;
-						BluetoothGattDescriptor descriptor = mCharacteristic
-								.getDescriptor(UUID.fromString(MainActivity.CHAR_CONFIG_UUID));
+						synchronized (bleProcess) {
+							mBleGatt = gatt;
+							BluetoothGattDescriptor descriptor = mCharacteristic
+									.getDescriptor(UUID.fromString(MainActivity.CHAR_CONFIG_UUID));
 
-						descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-						mBleGatt.writeDescriptor(descriptor);
-						mIsBluetoothEnable = true;
-						showToastAsync(finalActivity, "paired : " + mBleGatt.getDevice().getAddress() + " / "
-								+ mBleGatt.getDevice().getName());
-						
-						mBleGatt.getDevice().createBond();
-						CentralActivity.this.state = CentralActivity.STATE_NONE;
+							descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+							mBleGatt.writeDescriptor(descriptor);
+							mIsBluetoothEnable = true;
+							showToastAsync(finalActivity, "paired : " + mBleGatt.getDevice().getAddress() + " / "
+									+ mBleGatt.getDevice().getName());
+
+							mBleGatt.getDevice().createBond();
+							CentralActivity.this.state = CentralActivity.STATE_NONE;
+						}
 					}
 				}
 			}
