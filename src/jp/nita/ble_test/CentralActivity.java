@@ -88,6 +88,13 @@ public class CentralActivity extends Activity {
 	}
 	
 	private void setListeners(final CentralActivity activity){
+		findViewById(R.id.button_stop_scanning).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				CentralActivity.this.stopScanning();
+			}
+		});
+		
 		findViewById(R.id.button_re_scan).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -256,7 +263,7 @@ public class CentralActivity extends Activity {
 				device.connectGatt(getApplicationContext(), true, mGattCallback);
 			}
 			try {
-				Thread.sleep(10);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -265,61 +272,61 @@ public class CentralActivity extends Activity {
 
 	private void scanNewDevice() {
 		if (Build.VERSION.SDK_INT >= 5.0) {
+			state = STATE_SCANNING;
 			this.startScanByBleScanner();
 		} else {
-			guiThreadHandler.postDelayed(new Runnable() {
-				@Override
-				public void run() {
-					state = STATE_NONE;
-					mAdapter.stopLeScan(mScanCallback);
-					showToastAsync(finalActivity, "scanning stopped");
-				}
-			}, 10000);
-
 			state = STATE_SCANNING;
 			mAdapter.startLeScan(mScanCallback);
 			showToastAsync(finalActivity, "scanning started");
 		}
 	}
+	
+	private void stopScanning() {
+		if (Build.VERSION.SDK_INT >= 5.0) {
+			if (mScanner == null) {
+				showToastAsync(finalActivity, "mScanner is null");
+				return;
+			}
+			state = STATE_NONE;
+			mScanner.stopScan(scanCallback);
+			showToastAsync(finalActivity, "scanning stopped");
+		} else {
+			state = STATE_NONE;
+			mAdapter.stopLeScan(mScanCallback);
+			showToastAsync(finalActivity, "scanning stopped");
+		}
+	}
 
 	private void startScanByBleScanner() {
 		mScanner = mAdapter.getBluetoothLeScanner();
-		final ScanCallback scanCallback = new ScanCallback() {
-			@Override
-			public void onScanResult(int callbackType, ScanResult result) {
-				super.onScanResult(callbackType, result);
-				if (result.getDevice() == null) {
-					return;
-				}
-				int type = result.getDevice().getType();
-				if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL)
-						&& mManager.getConnectionState(result.getDevice(),
-								BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
-					showToastAsync(finalActivity,
-							"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
-					result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
-				}
-			}
-
-			@Override
-			public void onScanFailed(int intErrorCode) {
-				super.onScanFailed(intErrorCode);
-			}
-		};
-
-		guiThreadHandler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				state = STATE_NONE;
-				mScanner.stopScan(scanCallback);
-				showToastAsync(finalActivity, "scanning stopped");
-			}
-		}, 10000);
 
 		state = STATE_SCANNING;
 		mScanner.startScan(scanCallback);
 		showToastAsync(finalActivity, "scanning started");
 	}
+	
+	final ScanCallback scanCallback = new ScanCallback() {
+		@Override
+		public void onScanResult(int callbackType, ScanResult result) {
+			super.onScanResult(callbackType, result);
+			if (result.getDevice() == null) {
+				return;
+			}
+			int type = result.getDevice().getType();
+			if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL)
+					&& mManager.getConnectionState(result.getDevice(),
+							BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
+				showToastAsync(finalActivity,
+						"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
+				result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
+			}
+		}
+
+		@Override
+		public void onScanFailed(int intErrorCode) {
+			super.onScanFailed(intErrorCode);
+		}
+	};
 
 	private final LeScanCallback mScanCallback = new BluetoothAdapter.LeScanCallback() {
 		@Override
@@ -420,6 +427,9 @@ public class CentralActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		mIsBluetoothEnable = false;
+		if (mScanner != null) {
+			mScanner.stopScan(scanCallback);
+		}
 		if (mBleGatt != null) {
 			mBleGatt.close();
 			mBleGatt = null;

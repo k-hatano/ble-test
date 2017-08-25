@@ -12,12 +12,26 @@
         android:id="@+id/linearlayout_re_scan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" >
+        
+        <Button
+            android:id="@+id/button_stop_scanning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stop Scanning" />
 
         <Button
             android:id="@+id/button_re_scan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Re-scan" />
+
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/linearlayout_disconnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearlayout_re_scan" >
 
         <Button
             android:id="@+id/button_connect_to_a_found_device"
@@ -30,13 +44,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Disconnect" />
+
+        <Button
+            android:id="@+id/button_send_abc_central"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ABC" />
     </LinearLayout>
     
     <ScrollView
         android:id="@+id/scrolllayout_send"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/linearlayout_re_scan"
+        android:layout_below="@+id/linearlayout_disconnect"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true" >
 
@@ -75,12 +95,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="04" />
-
-        <Button
-            android:id="@+id/button_send_abc_central"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ABC" />
     </LinearLayout>
     
     </ScrollView>
