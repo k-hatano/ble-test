@@ -275,7 +275,7 @@ public class CentralActivity extends Activity {
 		for (BluetoothDevice device : btDevices) {
 			synchronized (bleProcess) {
 				int type = device.getType();
-				if ((type != BluetoothDevice.DEVICE_TYPE_CLASSIC) && mManager.getConnectionState(device,
+				if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL) && mManager.getConnectionState(device,
 						BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
 					showToastAsync(finalActivity, "connecting : " + device.getAddress() + " / " + device.getName());
 					device.connectGatt(getApplicationContext(), true, mGattCallback);
@@ -333,7 +333,7 @@ public class CentralActivity extends Activity {
 					return;
 				}
 				int type = result.getDevice().getType();
-				if ((type != BluetoothDevice.DEVICE_TYPE_CLASSIC) && mManager.getConnectionState(result.getDevice(),
+				if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL) && mManager.getConnectionState(result.getDevice(),
 						BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
 					showToastAsync(finalActivity,
 							"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
