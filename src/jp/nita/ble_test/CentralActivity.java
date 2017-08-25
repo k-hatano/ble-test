@@ -256,7 +256,7 @@ public class CentralActivity extends Activity {
 		Set<BluetoothDevice> btDevices = btAdapter.getBondedDevices();
 		for (BluetoothDevice device : btDevices) {
 			int type = device.getType();
-			if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL)
+			if ((type != BluetoothDevice.DEVICE_TYPE_CLASSIC)
 					&& mManager.getConnectionState(device,
 							BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
 				showToastAsync(finalActivity, "connecting : " + device.getAddress() + " / " + device.getName());
@@ -288,7 +288,7 @@ public class CentralActivity extends Activity {
 				return;
 			}
 			state = STATE_NONE;
-			mScanner.stopScan(scanCallback);
+			mScanner.stopScan(mLeScanCallback);
 			showToastAsync(finalActivity, "scanning stopped");
 		} else {
 			state = STATE_NONE;
@@ -298,14 +298,12 @@ public class CentralActivity extends Activity {
 	}
 
 	private void startScanByBleScanner() {
-		mScanner = mAdapter.getBluetoothLeScanner();
-
 		state = STATE_SCANNING;
-		mScanner.startScan(scanCallback);
+		mScanner.startScan(mLeScanCallback);
 		showToastAsync(finalActivity, "scanning started");
 	}
 	
-	final ScanCallback scanCallback = new ScanCallback() {
+	final ScanCallback mLeScanCallback = new ScanCallback() {
 		@Override
 		public void onScanResult(int callbackType, ScanResult result) {
 			super.onScanResult(callbackType, result);
@@ -313,7 +311,7 @@ public class CentralActivity extends Activity {
 				return;
 			}
 			int type = result.getDevice().getType();
-			if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL)
+			if ((type != BluetoothDevice.DEVICE_TYPE_CLASSIC)
 					&& mManager.getConnectionState(result.getDevice(),
 							BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
 				showToastAsync(finalActivity,
@@ -325,6 +323,21 @@ public class CentralActivity extends Activity {
 		@Override
 		public void onScanFailed(int intErrorCode) {
 			super.onScanFailed(intErrorCode);
+			
+			String description = "";
+			if (intErrorCode == ScanCallback.SCAN_FAILED_ALREADY_STARTED) {
+				description = "SCAN_FAILED_ALREADY_STARTED";
+			} else if (intErrorCode == ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED) {
+				description = "SCAN_FAILED_APPLICATION_REGISTRATION_FAILED";
+			} else if (intErrorCode == ScanCallback.SCAN_FAILED_FEATURE_UNSUPPORTED) {
+				description = "SCAN_FAILED_FEATURE_UNSUPPORTED";
+			} else if (intErrorCode == ScanCallback.SCAN_FAILED_INTERNAL_ERROR) {
+				description = "SCAN_FAILED_INTERNAL_ERROR";
+			} else {
+				description = "" + intErrorCode;
+			}
+
+			showToastAsync(finalActivity, "starting failed : " + description);
 		}
 	};
 
@@ -428,7 +441,7 @@ public class CentralActivity extends Activity {
 	protected void onDestroy() {
 		mIsBluetoothEnable = false;
 		if (mScanner != null) {
-			mScanner.stopScan(scanCallback);
+			mScanner.stopScan(mLeScanCallback);
 		}
 		if (mBleGatt != null) {
 			mBleGatt.close();
