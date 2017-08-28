@@ -18,6 +18,7 @@ public class MainActivity extends Activity {
 
 	public static final int REQUEST_CENTRAL = 1;
 	public static final int REQUEST_PERIPHERAL = 2;
+	public static final int REQUEST_SETTINGS = 2;
 	public static final int RESULT_OK = 0;
 	public static final int RESULT_MADAPTER_IS_NULL = 1;
 	public static final int RESULT_MADVERTISER_IS_NULL = 2;
@@ -42,6 +43,16 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(MainActivity.this, PeripheralActivity.class);
+				startActivityForResult(intent, REQUEST_PERIPHERAL);
+			}
+
+		});
+
+		findViewById(R.id.button_settings).setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
 				startActivityForResult(intent, REQUEST_PERIPHERAL);
 			}
 

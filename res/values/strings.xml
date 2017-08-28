@@ -6,5 +6,7 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_peripheral">PeripheralActivity</string>
     <string name="title_activity_central">CentralActivity</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="ok">OK</string>
 
 </resources>
