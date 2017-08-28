@@ -126,8 +126,11 @@ public class CentralActivity extends Activity {
 									CentralActivity.this.state = CentralActivity.STATE_PAIRED;
 									synchronized (bleProcess) {
 										showToastAsync(finalActivity, "connecting to " + list[arg1]);
-										foundDevices.get(list[arg1]).connectGatt(getApplicationContext(), true,
+										BluetoothGatt resultGatt = foundDevices.get(list[arg1]).connectGatt(getApplicationContext(), true,
 												mGattCallback);
+										if (resultGatt == null) {
+											showToastAsync(finalActivity, "error : result of connectGatt is null");
+										}
 									}
 									
 								}
@@ -281,7 +284,10 @@ public class CentralActivity extends Activity {
 				if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL) && mManager.getConnectionState(device,
 						BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
 					showToastAsync(finalActivity, "connecting : " + device.getAddress() + " / " + device.getName());
-					device.connectGatt(getApplicationContext(), true, mGattCallback);
+					BluetoothGatt resultGatt = device.connectGatt(getApplicationContext(), true, mGattCallback);
+					if (resultGatt == null) {
+						showToastAsync(finalActivity, "error : result of connectGatt is null");
+					}
 				}
 				try {
 					Thread.sleep(100);
@@ -333,8 +339,12 @@ public class CentralActivity extends Activity {
 						BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
 					showToastAsync(finalActivity,
 							"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
-					result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
+					BluetoothGatt resultGatt = result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
 					scanningDevices.add(result.getDevice().getAddress());
+
+					if (resultGatt == null) {
+						showToastAsync(finalActivity, "error : result of connectGatt is null");
+					}
 					
 					try {
 						Thread.sleep(100);
@@ -424,6 +434,8 @@ public class CentralActivity extends Activity {
 					} else if (finalActivity.state == CentralActivity.STATE_PAIRED) {
 						synchronized (bleProcess) {
 							mBleGatt = gatt;
+							boolean registered = mBleGatt.setCharacteristicNotification(mCharacteristic, true);
+							
 							BluetoothGattDescriptor descriptor = mCharacteristic
 									.getDescriptor(UUID.fromString(MainActivity.CHAR_CONFIG_UUID));
 
