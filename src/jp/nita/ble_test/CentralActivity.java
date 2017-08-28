@@ -126,7 +126,7 @@ public class CentralActivity extends Activity {
 									CentralActivity.this.state = CentralActivity.STATE_PAIRED;
 									synchronized (bleProcess) {
 										showToastAsync(finalActivity, "connecting to " + list[arg1]);
-										BluetoothGatt resultGatt = foundDevices.get(list[arg1]).connectGatt(getApplicationContext(), true,
+										BluetoothGatt resultGatt = foundDevices.get(list[arg1]).connectGatt(getApplicationContext(), false,
 												mGattCallback);
 										if (resultGatt == null) {
 											showToastAsync(finalActivity, "error : result of connectGatt is null");
@@ -284,7 +284,7 @@ public class CentralActivity extends Activity {
 				if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL) && mManager.getConnectionState(device,
 						BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
 					showToastAsync(finalActivity, "connecting : " + device.getAddress() + " / " + device.getName());
-					BluetoothGatt resultGatt = device.connectGatt(getApplicationContext(), true, mGattCallback);
+					BluetoothGatt resultGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
 					if (resultGatt == null) {
 						showToastAsync(finalActivity, "error : result of connectGatt is null");
 					}
@@ -339,7 +339,7 @@ public class CentralActivity extends Activity {
 						BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
 					showToastAsync(finalActivity,
 							"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
-					BluetoothGatt resultGatt = result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
+					BluetoothGatt resultGatt = result.getDevice().connectGatt(getApplicationContext(), false, mGattCallback);
 					scanningDevices.add(result.getDevice().getAddress());
 
 					if (resultGatt == null) {
