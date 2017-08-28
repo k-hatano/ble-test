@@ -42,7 +42,7 @@ public class CentralActivity extends Activity {
 	private BluetoothGattCharacteristic mCharacteristic;
 
 	private HashMap<String, BluetoothDevice> foundDevices = new HashMap<String, BluetoothDevice>();
-	private ArrayList<String> scanningDevices = new ArrayList<String>();
+	ArrayList<String> scanningDevices = new ArrayList<String>();
 
 	Handler guiThreadHandler = new Handler();
 
@@ -129,6 +129,7 @@ public class CentralActivity extends Activity {
 										foundDevices.get(list[arg1]).connectGatt(getApplicationContext(), true,
 												mGattCallback);
 									}
+									
 								}
 							}).show();
 				}
@@ -292,6 +293,7 @@ public class CentralActivity extends Activity {
 	}
 
 	private void scanNewDevice() {
+		scanningDevices = new ArrayList<String>();
 		this.state = STATE_SCANNING;
 		this.startScanByBleScanner();
 	}
@@ -323,11 +325,22 @@ public class CentralActivity extends Activity {
 					return;
 				}
 				int type = result.getDevice().getType();
+				if (scanningDevices.size() >= 1) {
+					return;
+				}
+				
 				if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL) && mManager.getConnectionState(result.getDevice(),
 						BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
 					showToastAsync(finalActivity,
 							"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
 					result.getDevice().connectGatt(getApplicationContext(), true, mGattCallback);
+					scanningDevices.add(result.getDevice().getAddress());
+					
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -370,6 +383,9 @@ public class CentralActivity extends Activity {
 				} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 					showToastAsync(finalActivity,
 							"disconnected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
+					if (scanningDevices.contains(gatt.getDevice().getAddress())) {
+						scanningDevices.remove(gatt.getDevice().getAddress());
+					}
 					if (mBleGatt.getDevice().getAddress().equals(gatt.getDevice().getAddress())) {
 						mBleGatt.close();
 						mBleGatt = null;
