@@ -1,5 +1,6 @@
 package jp.nita.ble_test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.UUID;
@@ -41,6 +42,7 @@ public class CentralActivity extends Activity {
 	private BluetoothGattCharacteristic mCharacteristic;
 
 	private HashMap<String, BluetoothDevice> foundDevices = new HashMap<String, BluetoothDevice>();
+	private ArrayList<String> scanningDevices = new ArrayList<String>();
 
 	Handler guiThreadHandler = new Handler();
 
@@ -290,30 +292,18 @@ public class CentralActivity extends Activity {
 	}
 
 	private void scanNewDevice() {
-		if (Build.VERSION.SDK_INT >= 5.0) {
-			this.state = STATE_SCANNING;
-			this.startScanByBleScanner();
-		} else {
-			this.state = STATE_SCANNING;
-			mAdapter.startLeScan(mScanCallback);
-			showToastAsync(finalActivity, "scanning started");
-		}
+		this.state = STATE_SCANNING;
+		this.startScanByBleScanner();
 	}
 
 	private void stopScanning() {
-		if (Build.VERSION.SDK_INT >= 5.0) {
-			if (mScanner == null) {
-				showToastAsync(finalActivity, "mScanner is null");
-				return;
-			}
-			this.state = STATE_NONE;
-			mScanner.stopScan(mLeScanCallback);
-			showToastAsync(finalActivity, "scanning stopped");
-		} else {
-			this.state = STATE_NONE;
-			mAdapter.stopLeScan(mScanCallback);
-			showToastAsync(finalActivity, "scanning stopped");
+		if (mScanner == null) {
+			showToastAsync(finalActivity, "mScanner is null");
+			return;
 		}
+		this.state = STATE_NONE;
+		mScanner.stopScan(mLeScanCallback);
+		showToastAsync(finalActivity, "scanning stopped");
 	}
 
 	private void startScanByBleScanner() {
@@ -360,27 +350,6 @@ public class CentralActivity extends Activity {
 			}
 
 			showToastAsync(finalActivity, "starting failed : " + description);
-		}
-	};
-
-	private final LeScanCallback mScanCallback = new BluetoothAdapter.LeScanCallback() {
-		@Override
-		public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					synchronized (bleProcess) {
-						int type = device.getType();
-						if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL)
-								&& mManager.getConnectionState(device,
-										BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
-							showToastAsync(finalActivity,
-									"connecting : " + device.getAddress() + " / " + device.getName());
-							BluetoothGatt gatt = device.connectGatt(getApplicationContext(), true, mGattCallback);
-						}
-					}
-				}
-			});
 		}
 	};
 
