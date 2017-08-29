@@ -40,7 +40,7 @@ public class CentralActivity extends Activity {
 	private BluetoothGattCharacteristic mCharacteristic;
 
 	private HashMap<String, BluetoothDevice> foundDevices = new HashMap<String, BluetoothDevice>();
-	ArrayList<String> scanningDevices = new ArrayList<String>();
+	HashMap<String, BluetoothGatt> scanningDevices = new HashMap<String, BluetoothGatt>();
 
 	Handler guiThreadHandler = new Handler();
 
@@ -297,7 +297,7 @@ public class CentralActivity extends Activity {
 	}
 
 	private void scanNewDevice() {
-		scanningDevices = new ArrayList<String>();
+		scanningDevices = new HashMap<String, BluetoothGatt>();
 		this.state = STATE_SCANNING;
 		this.startScanByBleScanner();
 	}
@@ -329,7 +329,7 @@ public class CentralActivity extends Activity {
 					return;
 				}
 				int type = result.getDevice().getType();
-				if (scanningDevices.size() >= 1) {
+				if (scanningDevices.size() >= 3 || scanningDevices.containsKey(result.getDevice().getAddress())) {
 					return;
 				}
 				
@@ -338,7 +338,7 @@ public class CentralActivity extends Activity {
 					showToastAsync(finalActivity,
 							"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
 					BluetoothGatt resultGatt = result.getDevice().connectGatt(getApplicationContext(), false, mGattCallback);
-					scanningDevices.add(result.getDevice().getAddress());
+					scanningDevices.put(result.getDevice().getAddress(), resultGatt);
 
 					if (resultGatt == null) {
 						showToastAsync(finalActivity, "error : result of connectGatt is null");
@@ -391,7 +391,7 @@ public class CentralActivity extends Activity {
 				} else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 					showToastAsync(finalActivity,
 							"disconnected : " + gatt.getDevice().getAddress() + " / " + gatt.getDevice().getName());
-					if (scanningDevices.contains(gatt.getDevice().getAddress())) {
+					if (scanningDevices.containsKey(gatt.getDevice().getAddress())) {
 						scanningDevices.remove(gatt.getDevice().getAddress());
 					}
 					if (mBleGatt.getDevice().getAddress().equals(gatt.getDevice().getAddress())) {
