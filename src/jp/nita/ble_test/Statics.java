@@ -1,7 +1,13 @@
 package jp.nita.ble_test;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+
 public class Statics {
 
+	public static final String PREF_KEY = "ble-test";
 	public static final String SETTING_CENTRAL_AUTO_CONNECT = "centralAutoConnect";
 	public static final String SETTING_PERIPHERAL_ADVERTISE_MODE = "peripheralAdvertiseMode";
 	public static final String SETTING_PERIPHERAL_TX_POWER = "centralTxPower";
@@ -53,6 +59,18 @@ public class Statics {
 		default:
 			return "???";
 		}
+	}
+	
+	public static int preferenceValue(Context context, String key, int def) {
+		SharedPreferences pref = context.getSharedPreferences(PREF_KEY, Activity.MODE_PRIVATE);
+		return pref.getInt(key, def);
+	}
+
+	public static void setPreferenceValue(Context context, String key, int val) {
+		SharedPreferences pref = context.getSharedPreferences(PREF_KEY, Activity.MODE_PRIVATE);
+		Editor editor = pref.edit();
+		editor.putInt(key, val);
+		editor.commit();
 	}
 	
 }
