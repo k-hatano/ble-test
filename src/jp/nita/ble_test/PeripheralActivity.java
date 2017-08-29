@@ -32,6 +32,9 @@ public class PeripheralActivity extends Activity {
 	BluetoothGattCharacteristic mCharacteristic;
 	BluetoothLeAdvertiser mAdvertiser;
 	AdvertiseCallback mAdvertiseCallback;
+	
+	int peripheralAdvertiseMode;
+	int peripheralTxPower;
 
 	Handler guiThreadHandler = new Handler();
 
@@ -72,12 +75,56 @@ public class PeripheralActivity extends Activity {
 			finish();
 			return;
 		}
+		
+		int advertiseMode = 0;
+		switch (peripheralAdvertiseMode) {
+		case Statics.SETTING_PERIPHERAL_ADVERTISE_MODE_BALANCED:
+			showToastAsync(activity, "advertise mode : balanced");
+			advertiseMode = AdvertiseSettings.ADVERTISE_MODE_BALANCED;
+			break;
+		case Statics.SETTING_PERIPHERAL_ADVERTISE_MODE_LOW_LATENCY:
+			showToastAsync(activity, "advertise mode : low latency");
+			advertiseMode = AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY;
+			break;
+		case Statics.SETTING_PERIPHERAL_ADVERTISE_MODE_LOW_POWER:
+			showToastAsync(activity, "advertise mode : low power");
+			advertiseMode = AdvertiseSettings.ADVERTISE_MODE_LOW_POWER;
+			break;
+		default:
+			showToastAsync(activity, "advertise mode : balanced");
+			advertiseMode = AdvertiseSettings.ADVERTISE_MODE_BALANCED;
+			break;
+		}
+		
+		int txPower = 0;
+		switch (peripheralTxPower) {
+		case Statics.SETTING_PERIPHERAL_TX_POWER_HIGH:
+			showToastAsync(activity, "tx power : high");
+			txPower = AdvertiseSettings.ADVERTISE_TX_POWER_HIGH;
+			break;
+		case Statics.SETTING_PERIPHERAL_TX_POWER_LOW:
+			showToastAsync(activity, "tx power : low");
+			txPower = AdvertiseSettings.ADVERTISE_TX_POWER_LOW;
+			break;
+		case Statics.SETTING_PERIPHERAL_TX_POWER_MEDIUM:
+			showToastAsync(activity, "tx power : medium");
+			txPower = AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM;
+			break;
+		case Statics.SETTING_PERIPHERAL_TX_POWER_ULTRA_LOW:
+			showToastAsync(activity, "tx power : ultra low");
+			txPower = AdvertiseSettings.ADVERTISE_TX_POWER_ULTRA_LOW;
+			break;
+		default:
+			showToastAsync(activity, "tx power : high");
+			txPower = AdvertiseSettings.ADVERTISE_TX_POWER_HIGH;
+			break;
+		}
 
 		AdvertiseSettings.Builder settingBuilder = new AdvertiseSettings.Builder();
-		settingBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED);
+		settingBuilder.setAdvertiseMode(advertiseMode);
 		settingBuilder.setConnectable(true);
-		settingBuilder.setTimeout(10000);
-		settingBuilder.setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM);
+		settingBuilder.setTimeout(100000);
+		settingBuilder.setTxPowerLevel(txPower);
 		AdvertiseSettings settings = settingBuilder.build();
 
 		AdvertiseData.Builder dataBuilder = new AdvertiseData.Builder();
@@ -322,5 +369,10 @@ public class PeripheralActivity extends Activity {
 				}
 			}
 		});
+	}
+	
+	public void updatePreferenceValues() {
+		peripheralAdvertiseMode = Statics.preferenceValue(this, Statics.SETTING_PERIPHERAL_ADVERTISE_MODE, 0);
+		peripheralTxPower = Statics.preferenceValue(this, Statics.SETTING_PERIPHERAL_TX_POWER, 0);
 	}
 }
