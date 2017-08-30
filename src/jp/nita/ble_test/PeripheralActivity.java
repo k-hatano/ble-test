@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.List;
 import java.util.UUID;
 
 public class PeripheralActivity extends Activity {
@@ -237,6 +238,11 @@ public class PeripheralActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				if (gattServer != null) {
+					if (mDevice != null) {
+						showToastAsync(activity, "disconnecting device : " + mDevice.getAddress());
+						gattServer.cancelConnection(mDevice);
+					}
+					
 					gattServer.clearServices();
 					gattServer.close();
 					gattServer = null;
@@ -250,6 +256,18 @@ public class PeripheralActivity extends Activity {
 					mAdvertiser = null;
 				} else {
 					showToastAsync(activity, "mAdvertiser is null");
+				}
+			}
+		});
+		
+		findViewById(R.id.button_disconnect).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mDevice != null) {
+					showToastAsync(activity, "disconnecting device : " + mDevice.getAddress());
+					gattServer.cancelConnection(mDevice);
+				} else {
+					showToastAsync(activity, "gattServer is null");
 				}
 			}
 		});

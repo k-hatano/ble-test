@@ -37,19 +37,19 @@
             android:id="@+id/button_connect_to_a_found_device"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Re-connect" />
+            android:text="Pair" />
 
         <Button
             android:id="@+id/button_disconnect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Disconnect" />
+            android:text="Unpair" />
 
         <Button
             android:id="@+id/button_send_abc_central"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ABC" />
+            android:text="Send ABC" />
     </LinearLayout>
     
     <ScrollView
