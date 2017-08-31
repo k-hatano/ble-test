@@ -43,6 +43,8 @@ public class PeripheralActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_peripheral);
+		
+		updatePreferenceValues();
 
 		BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
 		BluetoothAdapter mBluetoothAdapter = bluetoothManager.getAdapter();

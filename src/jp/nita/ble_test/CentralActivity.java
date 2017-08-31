@@ -1,6 +1,5 @@
 package jp.nita.ble_test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.UUID;
@@ -100,6 +99,7 @@ public class CentralActivity extends Activity {
 		findViewById(R.id.button_re_scan).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				foundDevices = new HashMap<String, BluetoothDevice>();
 				CentralActivity.this.scanPairedDevices();
 				CentralActivity.this.scanNewDevice();
 			}
@@ -285,7 +285,9 @@ public class CentralActivity extends Activity {
 					BluetoothGatt resultGatt = device.connectGatt(getApplicationContext(), false, mGattCallback);
 					if (resultGatt == null) {
 						showToastAsync(finalActivity, "error : result of connectGatt is null");
+						return;
 					}
+					scanningDevices.put(resultGatt.getDevice().getAddress(), resultGatt);
 				}
 				try {
 					Thread.sleep(100);
@@ -297,7 +299,6 @@ public class CentralActivity extends Activity {
 	}
 
 	private void scanNewDevice() {
-		scanningDevices = new HashMap<String, BluetoothGatt>();
 		this.state = STATE_SCANNING;
 		this.startScanByBleScanner();
 	}
@@ -450,7 +451,11 @@ public class CentralActivity extends Activity {
 									mBleGatt.getDevice().getAddress() + " / " + mBleGatt.getDevice().getName());
 						}
 					}
+				} else {
+					showToastAsync(finalActivity, "characteristic not matched : " + gatt.getDevice().getAddress().toString());
 				}
+			} else {
+				showToastAsync(finalActivity, "service not matched : " + gatt.getDevice().getAddress().toString());
 			}
 		}
 
