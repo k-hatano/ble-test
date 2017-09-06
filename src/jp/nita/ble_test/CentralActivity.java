@@ -145,7 +145,6 @@ public class CentralActivity extends Activity {
 						showToastAsync(activity, "mBleGatt is null");
 						return;
 					}
-
 					mBleGatt.disconnect();
 				}
 			}
@@ -330,14 +329,14 @@ public class CentralActivity extends Activity {
 					return;
 				}
 				int type = result.getDevice().getType();
-				if (scanningDevices.size() >= 3 || scanningDevices.containsKey(result.getDevice().getAddress())) {
+				if (scanningDevices.size() >= 4 || scanningDevices.containsKey(result.getDevice().getAddress())) {
 					return;
 				}
 				
 				if ((type == BluetoothDevice.DEVICE_TYPE_LE || type == BluetoothDevice.DEVICE_TYPE_DUAL) && mManager.getConnectionState(result.getDevice(),
 						BluetoothProfile.GATT) != BluetoothProfile.STATE_CONNECTING) {
 					showToastAsync(finalActivity,
-							"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName());
+							"connecting : " + result.getDevice().getAddress() + " / " + result.getDevice().getName() + " (" + result.getRssi() + ")");
 					BluetoothGatt resultGatt = result.getDevice().connectGatt(getApplicationContext(), false, mGattCallback);
 					scanningDevices.put(result.getDevice().getAddress(), resultGatt);
 
@@ -456,6 +455,7 @@ public class CentralActivity extends Activity {
 				}
 			} else {
 				showToastAsync(finalActivity, "service not matched : " + gatt.getDevice().getAddress().toString());
+				gatt.disconnect();
 			}
 		}
 

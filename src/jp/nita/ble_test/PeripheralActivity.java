@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothGattService;
@@ -23,7 +24,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import java.util.List;
 import java.util.UUID;
 
 public class PeripheralActivity extends Activity {
@@ -32,7 +32,38 @@ public class PeripheralActivity extends Activity {
 	BluetoothDevice mDevice;
 	BluetoothGattCharacteristic mCharacteristic;
 	BluetoothLeAdvertiser mAdvertiser;
-	AdvertiseCallback mAdvertiseCallback;
+	
+	final PeripheralActivity finalActivity = this;
+	
+	AdvertiseCallback mAdvertiseCallback = new AdvertiseCallback() {
+		@Override
+		public void onStartSuccess(AdvertiseSettings settingsInEffect) {
+			super.onStartSuccess(settingsInEffect);
+			showToastAsync(finalActivity, "started advertising");
+		}
+
+		@Override
+		public void onStartFailure(int errorCode) {
+			super.onStartFailure(errorCode);
+
+			String description = "";
+			if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_FEATURE_UNSUPPORTED) {
+				description = "ADVERTISE_FAILED_FEATURE_UNSUPPORTED";
+			} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_TOO_MANY_ADVERTISERS) {
+				description = "ADVERTISE_FAILED_TOO_MANY_ADVERTISERS";
+			} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_ALREADY_STARTED) {
+				description = "ADVERTISE_FAILED_ALREADY_STARTED";
+			} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE) {
+				description = "ADVERTISE_FAILED_DATA_TOO_LARGE";
+			} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_INTERNAL_ERROR) {
+				description = "ADVERTISE_FAILED_INTERNAL_ERROR";
+			} else {
+				description = "" + errorCode;
+			}
+
+			showToastAsync(finalActivity, "starting failed : " + description);
+		};
+	};
 	
 	int peripheralAdvertiseMode;
 	int peripheralTxPower;
@@ -136,35 +167,6 @@ public class PeripheralActivity extends Activity {
 		AdvertiseData advertiseData = dataBuilder.build();
 
 		gattServer = setGattServer();
-		mAdvertiseCallback = new AdvertiseCallback() {
-			@Override
-			public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-				super.onStartSuccess(settingsInEffect);
-				showToastAsync(activity, "started advertising");
-			}
-
-			@Override
-			public void onStartFailure(int errorCode) {
-				super.onStartFailure(errorCode);
-
-				String description = "";
-				if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_FEATURE_UNSUPPORTED) {
-					description = "ADVERTISE_FAILED_FEATURE_UNSUPPORTED";
-				} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_TOO_MANY_ADVERTISERS) {
-					description = "ADVERTISE_FAILED_TOO_MANY_ADVERTISERS";
-				} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_ALREADY_STARTED) {
-					description = "ADVERTISE_FAILED_ALREADY_STARTED";
-				} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE) {
-					description = "ADVERTISE_FAILED_DATA_TOO_LARGE";
-				} else if (errorCode == AdvertiseCallback.ADVERTISE_FAILED_INTERNAL_ERROR) {
-					description = "ADVERTISE_FAILED_INTERNAL_ERROR";
-				} else {
-					description = "" + errorCode;
-				}
-
-				showToastAsync(activity, "starting failed : " + description);
-			};
-		};
 
 		showToastAsync(activity, "starting advertising");
 		mAdvertiser.startAdvertising(settings, advertiseData, mAdvertiseCallback);
@@ -322,6 +324,8 @@ public class PeripheralActivity extends Activity {
 				if (value != null) {
 					showToastAsync(finalActivity, "get char write request : " + new String(value));
 					Log.d("TAG", "value ~ " + new String(value));
+				} else {
+					showToastAsync(finalActivity, "get char write request : null");
 				}
 				gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null);
 			}
@@ -347,6 +351,30 @@ public class PeripheralActivity extends Activity {
 					mDevice = null;
 				}
 			}
+			
+			@Override
+			public void onDescriptorReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattDescriptor descriptor) {
+				super.onDescriptorReadRequest(device, requestId, offset, descriptor);
+				showToastAsync(finalActivity, "get descriptor read request");
+			}
+			
+			@Override
+			public void onDescriptorWriteRequest(BluetoothDevice device, int requestId, BluetoothGattDescriptor descriptor, boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
+				super.onDescriptorWriteRequest(device, requestId, descriptor, preparedWrite, responseNeeded, offset, value);
+				
+				if (value != null) {
+					showToastAsync(finalActivity, "get descriptor write request : " + new String(value));
+				} else {
+					showToastAsync(finalActivity, "get descriptor write request : null");
+				}
+			}
+			
+			@Override
+			public void onExecuteWrite(BluetoothDevice device, int requestId, boolean execute) {
+				super.onExecuteWrite(device, requestId, execute);
+				showToastAsync(finalActivity, "get on execute write");
+			}
+			
 		});
 
 		if (gatt == null) {
@@ -361,7 +389,10 @@ public class PeripheralActivity extends Activity {
 						| BluetoothGattCharacteristic.PROPERTY_WRITE,
 				BluetoothGattCharacteristic.PERMISSION_READ | BluetoothGattCharacteristic.PERMISSION_WRITE);
 		service.addCharacteristic(mCharacteristic);
-		gatt.addService(service);
+		boolean addResult = gatt.addService(service);
+		if (addResult == false) {
+			showToastAsync(finalActivity, "adding service failed");
+		}
 
 		return gatt;
 	}
