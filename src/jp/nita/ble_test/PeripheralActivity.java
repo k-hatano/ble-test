@@ -67,6 +67,7 @@ public class PeripheralActivity extends Activity {
 	
 	int peripheralAdvertiseMode;
 	int peripheralTxPower;
+	int peripheralIncludeDeviceName;
 
 	Handler guiThreadHandler = new Handler();
 
@@ -160,10 +161,22 @@ public class PeripheralActivity extends Activity {
 		settingBuilder.setTimeout(100000);
 		settingBuilder.setTxPowerLevel(txPower);
 		AdvertiseSettings settings = settingBuilder.build();
+		
+		int includeDeviceName = 0;
+		switch (peripheralIncludeDeviceName) {
+		case 0:
+			showToastAsync(activity, "include device name : no");
+			includeDeviceName = 0;
+			break;
+		default:
+			showToastAsync(activity, "include device name : yes");
+			includeDeviceName = 1;
+			break;
+		}
 
 		AdvertiseData.Builder dataBuilder = new AdvertiseData.Builder();
 		dataBuilder.addServiceUuid(new ParcelUuid(UUID.fromString(MainActivity.SERVICE_UUID)));
-		dataBuilder.setIncludeDeviceName(false);
+		dataBuilder.setIncludeDeviceName(includeDeviceName == 0 ? false : true);
 		AdvertiseData advertiseData = dataBuilder.build();
 
 		gattServer = setGattServer();

@@ -19,6 +19,7 @@ public class SettingsActivity extends Activity implements OnItemClickListener {
 
 	int peripheralAdvertiseMode;
 	int peripheralTxPower;
+	int peripheralIncludeDeviceName;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,7 @@ public class SettingsActivity extends Activity implements OnItemClickListener {
 	public void updatePreferenceValues() {
 		peripheralAdvertiseMode = Statics.preferenceValue(this, Statics.SETTING_PERIPHERAL_ADVERTISE_MODE, 0);
 		peripheralTxPower = Statics.preferenceValue(this, Statics.SETTING_PERIPHERAL_TX_POWER, 0);
+		peripheralIncludeDeviceName = Statics.preferenceValue(this, Statics.SETTING_PERIPHERAL_INCLUDE_DEVICE_NAME, 0);
 	}
 
 	public void updateSettingsListView() {
@@ -54,6 +56,11 @@ public class SettingsActivity extends Activity implements OnItemClickListener {
 			map = new HashMap<String, String>();
 			map.put("key", getString(R.string.settings_peripheral_tx_power));
 			map.put("value", Statics.getPeripheralTxPower(peripheralTxPower));
+			list.add(map);
+			
+			map = new HashMap<String, String>();
+			map.put("key", getString(R.string.settings_include_device_name));
+			map.put("value", Statics.getIncludeDeviceName(this, peripheralIncludeDeviceName));
 			list.add(map);
 		}
 
@@ -103,6 +110,27 @@ public class SettingsActivity extends Activity implements OnItemClickListener {
 								peripheralTxPower = arg1;
 								Statics.setPreferenceValue(SettingsActivity.this, Statics.SETTING_PERIPHERAL_TX_POWER,
 										peripheralTxPower);
+								updatePreferenceValues();
+								updateSettingsListView();
+								arg0.dismiss();
+								((ListView) findViewById(R.id.listview_settings)).setSelection(position);
+							}
+						}).show();
+				break;
+			}
+			case 2: {
+				CharSequence list[] = new String[2];
+				for (int i = 0; i < 2; i++) {
+					list[i] = Statics.getIncludeDeviceName(this, i);
+				}
+				new AlertDialog.Builder(SettingsActivity.this)
+						.setTitle(getString(R.string.settings_include_device_name))
+						.setSingleChoiceItems(list, peripheralIncludeDeviceName, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface arg0, int arg1) {
+								peripheralIncludeDeviceName = arg1;
+								Statics.setPreferenceValue(SettingsActivity.this, Statics.SETTING_PERIPHERAL_INCLUDE_DEVICE_NAME,
+										peripheralIncludeDeviceName);
 								updatePreferenceValues();
 								updateSettingsListView();
 								arg0.dismiss();

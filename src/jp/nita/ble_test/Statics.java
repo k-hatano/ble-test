@@ -11,6 +11,7 @@ public class Statics {
 	public static final String SETTING_CENTRAL_AUTO_CONNECT = "centralAutoConnect";
 	public static final String SETTING_PERIPHERAL_ADVERTISE_MODE = "peripheralAdvertiseMode";
 	public static final String SETTING_PERIPHERAL_TX_POWER = "centralTxPower";
+	public static final String SETTING_PERIPHERAL_INCLUDE_DEVICE_NAME = "peripheralIncludeDeviceName";
 	
 	public static final int SETTING_CENTRAL_AUTO_CONNECT_FALSE = 0;
 	public static final int SETTING_CENTRAL_AUTO_CONNECT_TRUE = 1;
@@ -58,6 +59,15 @@ public class Statics {
 			return "ADVERTISE_TX_POWER_ULTRA_LOW";
 		default:
 			return "???";
+		}
+	}
+	
+	public static String getIncludeDeviceName(Context context, int which) {
+		switch (which) {
+		case 0:
+			return context.getString(R.string.no);
+		default:
+			return context.getString(R.string.yes);
 		}
 	}
 	
